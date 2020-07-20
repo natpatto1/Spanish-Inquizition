@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+
+{% block title %}Level detail view{% endblock title %}
+
+
+{% block content %}
+<body class = 'home'>
+<input type="hidden" value="{{ level_up }}" id="level_up">
+<div class="modal fade" id="myModal" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+  <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Level Up!</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true" class ="close">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body"> Felicidades! You have earned enough points to level up!
+          <a href ="{% url 'home' %}">Go back to Topic menu to learn new topic.</a>
+      </div></div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row justify-content-around">
+        <div class="col-6 card" >
+            <div class="d-flex p-2 bd-highlight justify-content-center">Learn {{ description }}</div>
+
+        <table class="table table-hover table-striped">
+            <thead>
+    <tr>
+      <th scope="col">Spanish</th>
+      <th scope="col">Translation</th>
+        <th scope="col">Ready to Review</th>
+        <th scope="col">Listen</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for object in table_words %}
+  <tr>
+
+      <th scope="row">{{ object.spanish_phrase }}</th>
+      <td>{{ object.english_translation }}</td>
+      <td>{{ object.review_in }} day(s)</td>
+      <td><a href="" class="say" name = "{{ object.spanish_phrase }}">listen</a>
+          </td>
+
+  </tr>
+  {% endfor %}
+  </tbody>
+
+        </table>
+
+            <input type="hidden" value="{{ NumWords }}" id="words">
+            </div>
+
+
+
+
+
+        <div class="col-4 card" style="height:500px;">
+
+            <div class="d-flex p-2 bd-highlight justify-content-center">Play</div>
+            <div class="d-flex p-2 bd-highlight justify-content-center">
+            <a href ="{% url 'flashcard' %}"><img src="{% static 'flashcard.png' %}"
+                                      width=150"><figcaption style="text-align:center;">Flashcard Game</figcaption></a>
+
+            </div>
+            <div class="d-flex p-2 bd-highlight justify-content-center">
+                <a href ="{% url 'construct' %}"><img src="{% static 'construct.png' %}"
+                                      width=150"><figcaption style="text-align:center;">Construct Game</figcaption></a></div>
+            <div class="d-flex p-2 bd-highlight justify-content-center">
+                <a href="{% url 'home' %}">Select a Different Topic</a></div>
+        </div>
+    </div>
+
+
+
+</div>
+
+<script>
+    const options = document.getElementsByClassName('say');
+    const words = document.getElementById('words').value;
+    var levelUp = document.getElementById('level_up').value;
+    var span = document.getElementsByClassName("close")[0];
+    function listen(value) {
+        var text = value;
+        var msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'es-SP';
+        window.speechSynthesis.speak(msg);}
+
+    document.addEventListener("DOMContentLoaded", function() {
+    for (let i = 0; i < words; i++) {
+      options[i].addEventListener("click", function() {
+        listen(options[i].name);
+      });
+      }
+      if (levelUp == 'True'){
+      $("#myModal").modal('show');};
+
+      span.onclick = function() {
+        $("#myModal").hide();
+        $(".modal-backdrop").hide();
+        };
+       console.log(levelUp)
+  });
+
+
+
+
+
+
+
+
+</script>
+
+</body>
+{% endblock content %}
+

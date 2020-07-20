@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static %)
+{% block content %}
+<SCRIPT type="text/javascript">
+	window.history.forward();
+	function noBack() { window.history.forward(); }
+</SCRIPT>
+
+
+
+<BODY onload="noBack();"
+	onpageshow="if (event.persisted) noBack();" onunload=""
+	style="background-image:url(/static/gameover2.png);background-repeat: no-repeat;
+    background-size: 100% 100%;">
+<div class="container">
+	<h1>3 Strikes and Game Over! </h1>
+
+	</div>
+
+
+
+
+</BODY>
+
+<script>
+
+	setTimeout(function(){
+            window.location.href = "{% url 'level_info' %}";
+         }, 1000);
+
+</script>
+
+{% endblock content %}

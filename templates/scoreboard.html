@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+
+
+{% block content %}
+<script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+<body  style="background-image:url(/static/smalltile.png); background-repeat: repeat;
+    margin:3px;">
+
+<div id = "users2">
+  <input type="text" class="search" placeholder="Search username" />
+
+<table class="table table-hover table-sm" id="score-table">
+  <thead class="thead-light">
+    <tr>
+      <th scope="col" class="sort" data-sort="name">User</th>
+      <th scope="col" class="sort" data-sort="score">Score</th>
+      <th scope="col" class="sort" data-sort="streak">Streak</th>
+    </tr>
+  </thead>
+  <tbody class="list">
+  {% for obj in ranked %}
+  <tr class="table-success">
+      <td class="id" style="display:none;">{{ loop.index }}</td>
+      <td class="name">{{ obj.0 }}</td>
+      <td class="score">{{ obj.1.0 }}</td>
+      <td class="streak">{{ obj.1.1 }} day(s)</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+
+
+
+
+
+</body>
+<script>
+
+
+var options = {
+  valueNames: [ 'id', 'name', 'score', 'streak' ]
+};
+
+// Init list
+var contactList = new List('users2', options);
+
+var idField = $('#id-field'),
+    nameField = $('#name-field'),
+    scoreField = $('#score-field'),
+    streakField = $('#streak-field');
+
+// Sets callbacks to the buttons in the list
+refreshCallbacks();
+
+
+</script>
+
+{% endblock content %}

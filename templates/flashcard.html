@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+
+
+
+{% block title %}Flashcard Game{% endblock title %}
+
+{% block content %}
+
+<BODY style="background-image:url(/static/smalltile.png); background-repeat: repeat;
+    margin:3px;">
+<div class="container">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert {{ message.tags }}" role="alert">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+<div>
+        <input type="hidden" value="{{ lives }}" id="lives">
+        <div class="row justify-content-around">
+            <div class="col-2">
+                <div class="d-flex flex-row bd-highlight mb-3 justify-content-center">
+                    <div class="p-2 bd-highlight">
+                        <img src="{% static 'Alive.png' %}" id="life-1" style="width:70px;"></div>
+                    <div class="p-2 bd-highlight">
+                        <img src="{% static 'Alive.png' %}" id="life-2" style="width:70px;"></div>
+                    <div class="p-2 bd-highlight">
+                        <img src="{% static 'Alive.png' %}" id="life-3"style="width:70px;"></div>
+                </div>
+            </div>
+            <div class="col-1">
+                <div class="circle" id="timer" value="" style="font-size: 50px;">10</div>
+    </div>
+
+        </div>
+
+  <div class="card my-3">
+    <div class="card-header">
+          Question {{ question_num }}
+    </div>
+      <form id="question" class="card-body" action="{% url 'flashcard' %}" method="POST">
+          {% csrf_token %}
+          <h5 class="card-title text-center">{{ question }}</h5>
+        <div>
+
+          <input type="hidden" name="question-id" value="{{ number }}">
+          <input type="hidden" name="question-num" value ="{{ question_num }}">
+          <input type="hidden" name="level" value="{{ level }}">
+          <input type="hidden" id="answer" name="answer" value="">
+          </div>
+
+
+        <div>
+          {% for option in options %}
+          <button class = "btn btn-outline-success option-btn my-2 mx-auto d-block" style="width: 250px">
+          {{ option }}</button>
+          {% endfor %}
+        </div>
+      </form>
+
+    <div class="text-center">
+<p><a href ="{% url 'level_info' %}" class="btn btn-primary">Exit</a></p>
+</div>
+      </div>
+
+    </div>
+
+
+<script>
+  const timeOut = 10000;
+  const question = document.getElementById('question');
+  const answer = document.getElementById('answer');
+  const timer = document.getElementById('timer');
+  const options = document.getElementsByClassName('option-btn');
+  const lives = document.getElementById('lives').value;
+
+  var timerCount = 10;
+
+  function submitForm(value) {
+    answer.value = value;
+    question.submit();
+  }
+
+  function decreaseTimer() {
+    timer.innerHTML = timerCount;
+    if(timerCount <= 0) {
+      submitForm("timeout");
+    } else {
+      timerCount -= 1;
+      setTimeout(decreaseTimer, 1000);
+    }
+  }
+  function liveImages(){
+        if (lives == 2){
+            document.getElementById('life-3').src ="{% static 'Dead.png' %}";
+            }
+        else if (lives == 1){
+            document.getElementById('life-3').src ="{% static 'Dead.png' %}"
+            document.getElementById('life-2').src ="{% static 'Dead.png' %}"
+        };
+    }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    for (let i = 0; i < 4; i++) {
+      options[i].addEventListener("click", function() {
+        submitForm(options[i].innerHTML);
+      });
+      }
+    liveImages();
+    decreaseTimer();
+  });
+
+
+history.pushState(null, null, location.href );
+window.addEventListener('popstate', function(event) {
+  history.pushState(null, null, location.href);
+});
+
+
+  </script>
+{% endblock content %}
+
+

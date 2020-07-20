@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+
+
+{% block title %}Flashcard Game{% endblock title %}
+{% block content %}
+<body  style="background-image:url(/static/smalltile.png); background-repeat: repeat;
+    margin:3px;">
+<input type="hidden" value="{{ level_up }}" id="level_up">
+<div class="modal fade" id="myModal" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+  <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Level Up!</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true" class ="close">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body"> Felicidades! You have earned enough points to level up!
+          <a href ="{% url 'home' %}">Go back to Topic menu to learn new topic.</a>
+      </div></div>
+    </div>
+</div>
+
+<div class="container">
+  <div class="row justify-content-around">
+    <div class="col-10" style="height:150px; padding:5px; bottom-margin: 10px;">
+      <div class="d-flex flex-row bd-highlight mb-3 justify-content-around">
+        <div class="p-2 bd-highlight">
+          <div class ="score-circle"><b>+{{ score }}</b> points</div>
+        </div>
+        <div class="p-2 bd-highlight">
+      <a href ="{% url 'level_info' %}"><button class='btn btn-primary ml-2'>Back to Level Menu</button></a>
+        </div>
+        <div class="p-2 bd-highlight">
+          <a href="{% url 'flashcard' %}"><button class="btn btn-primary ml-2">Play again &#8635</button></a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <br>
+<div class="row justify-content-around">
+
+
+<table class="table table-hover">
+  <thead class="thead-light">
+    <tr>
+      <th scope="col">Spanish</th>
+      <th scope="col">Result</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for mykey,myvalue in data.items %}
+  {% for item in myvalue %}
+  {% if item == 5 %}
+        <tr class="table-success">
+    {% else %}
+        <tr class ="table-danger">
+    {% endif %}
+      <th scope="row">{{ mykey }}</th>
+      <td>{{ item }}</td>
+  </tr>
+  {% endfor %}
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+
+
+
+
+
+
+</div>
+<script>
+  var levelUp = document.getElementById('level_up').value;
+  var span = document.getElementsByClassName("close")[0];
+
+  document.addEventListener("DOMContentLoaded", function() {
+      if (levelUp == 'True'){
+      $("#myModal").modal('show');};
+
+      span.onclick = function() {
+        $("#myModal").hide();
+        $(".modal-backdrop").hide();
+        };
+       console.log(levelUp)
+  });
+</script>
+{% endblock content %}

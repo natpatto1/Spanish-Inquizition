@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+
+{% block title %}{{ user }}'s Profile{% endblock title %}
+
+{% block content %}
+<body class="home">
+<div class="container">
+    <div class="row justify-content-around">
+        <div class="col-7 card">
+
+
+{% for object in course_list %}
+<p>Level number {{ object.level }}, with a total {{ object.score }} points earned.</p>
+{% endfor %}
+            <p>Current streak : {{ current_streak }} day(s)</p>
+            <p>Longest streak : {{ longest_streak.day_streak }} day(s)</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+<h1>Your Activity</h1>
+<table width="50%">
+    <tr>
+        <td width="20%" align="left">
+            <a href="/profile/{{PreviousYear}}/{{PreviousMonth}}/">{{PreviousMonthName}} {{PreviousYear}}</a>
+        </td>
+
+        <td width="20%" align="center"><a href="/profile">Today</a></td>
+        <td width="20%" align="right">
+          <a href="/profile/{{YearAfterThis}}/{{Month}}/">{{MonthName}} {{YearAfterThis}}</a> &gt;&gt;
+        </td>
+
+    </tr>
+</table>
+<div id="calendar">
+  {{Calendar}}
+</div>
+</div>
+
+{% endblock content %}
+
