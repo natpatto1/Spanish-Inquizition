@@ -83,7 +83,7 @@
     const question = document.getElementById('question');
     const submit = document.getElementById('submit');
     const response = document.getElementById('response');
-    const correct_answer = document.getElementById('correct-answer').value;
+    var correct_answer = document.getElementById('correct-answer').value;
     var timerStop = 'False';
     const lives = document.getElementById('lives').value;
     const answer = document.getElementById('answer');
@@ -158,6 +158,9 @@
 
     submit.addEventListener("click",function(){
         var answer = document.getElementById('user-input').value;
+        answer= answer.replace(/[?!¿¡]/g,"")
+        correct_answer = correct_answer.replace(/[?!¿¡]/g,"")
+        answer = answer.replace(/\s+/g, ' ').trim()
         if (answer === correct_answer){
             response.innerHTML = 'Sucess!';
             response.style.color = '#32CD32';

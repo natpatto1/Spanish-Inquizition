@@ -230,16 +230,23 @@ class FlashcardResult(LoginRequiredMixin, View):
         user = PlayerScore.objects.get(user = self.request.user)
         user.score = int(user.score) + int(game_score)
 
+        #Add game points to current level points only if the game was played in the user's top level
+        if int(status.current_level) == int(user.level.level_number):
+            user.current_level_score = user.current_level_score + game_score
+
+
 
         #If points threshold is met for level user can level up
         level_detail = Levels.objects.filter(level_number=str(user.level)).first()
         try:
-            if user.score >= level_detail.points_threshold:
+            if user.current_level_score >= level_detail.points_threshold:
                 #level up
                 #Get next level model
                 levelUp = str(user.level.level_number + 1)
                 levelUp_detail = Levels.objects.get(level_number = levelUp)
                 user.level = levelUp_detail
+                #If level up reset current level points to zero
+                user.current_level_score = 0
                 request.session['level_up'] = True
 
         except:
@@ -290,6 +297,7 @@ class GameOver(LoginRequiredMixin,View):
         initialized.currentQuestion = 0
         initialized.currentScore = 0
         initialized.currentErrors = 0
+        initialized.current_level = 0
         initialized.save()
         results = dict()
         request.session['results'] = results

@@ -163,7 +163,7 @@ class InitializeMixin(object):
             maxLevel = int(playerScore.level.level_number)
         # Check if user has surpasses threshold points
         level_detail = Levels.objects.filter(level_number=str(maxLevel)).first()
-        if int(playerScore.score) >= int(level_detail.points_threshold):
+        if int(playerScore.current_level_score) >= int(level_detail.points_threshold):
             # set the session data as levelled up so can display bootstrap level up
             request.session['level_up'] = True
             maxLevel = maxLevel + 1
@@ -211,7 +211,8 @@ class CourseListView(LoginRequiredMixin, LoadQuestionsMixin, View):
             level_and_score, created = PlayerScore.objects.get_or_create(user=user, level=levelOne)
             level_and_score.save()
         level = str(level_and_score.level)
-        score = level_and_score.score
+        score = level_and_score.current_level_score
+        total_score = level_and_score.score
 
 
         level_threshold = Levels.objects.filter(level_number=str(level)).first()
@@ -269,7 +270,7 @@ class CourseListView(LoginRequiredMixin, LoadQuestionsMixin, View):
         context = {
             'user': user,
             'level': level,
-            'score': score,
+            'total_score': total_score,
             'level_threshold': level_points_threshold,
             'points': points_needed,
             'strength': strength,
@@ -472,6 +473,8 @@ class LevelInfo(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin, View):
             answered.save()
 
         # Get review time for each item
+        # Count number of items with additional information also (i)
+        i = 0
         ready_to_review = list()
         for item in spanish_list:
             spanish = Spanish.objects.get(spanish_phrase=item)
@@ -483,11 +486,18 @@ class LevelInfo(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin, View):
             due = due.days
             ls = (spanish.spanish_phrase, due)
             ready_to_review.append(ls)
+            if str(spanish.information) != '':
+                i =1 +1
+
+
+
+
 
         #convert queryset to dictionary
 
         table_words= [{'spanish_phrase': obj.spanish_phrase,
-                       'english_translation': obj.english_translation} for obj in spanish_list]
+                       'english_translation': obj.english_translation,
+                       'information': obj.information} for obj in spanish_list]
 
         for item in table_words:
             for obj in ready_to_review:
@@ -505,6 +515,7 @@ class LevelInfo(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin, View):
             'level_up': request.session['level_up'],
             'ready_to_review': ready_to_review,
             'table_words': table_words,
+            'NumInfo': i,
         }
 
         return render(request, self.template_name, context)

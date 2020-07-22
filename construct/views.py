@@ -15,6 +15,7 @@ from flashcard.models import Answered
 from datetime import timedelta
 from django.utils import timezone
 import datetime
+import re
 from django.contrib.postgres.search import SearchVector
 from .models import Verbs
 from datetime import date
@@ -126,7 +127,8 @@ class ConstructGame(LoginRequiredMixin, UpdateItemsMixin, LoadQuestionsMixin, In
         spanish = data['fields']['spanish_id']
         #This makes a list of spanish split into elements in order to decide if it should be split by character of word
         spanishwords = spanish.split()
-        if len(spanishwords) > 2 and question_num % 3 != 1:
+        #if len(spanishwords) > 2 and question_num % 3 != 1:
+        if len(spanishwords) > 2:
             if '?' in spanish:
                 spanishwords = spanish[1:-1].split()
                 spanishwords = spanishwords + ['?', '¿']
@@ -163,9 +165,11 @@ class ConstructGame(LoginRequiredMixin, UpdateItemsMixin, LoadQuestionsMixin, In
     def post(self,request):
         answer = request.POST['user_input']
         #remove double spacing if exists
-        answer= answer.replace('  ',' ')
-        answer = answer.replace('   ', ' ')
-        answer = answer.replace('    ', ' ')
+
+
+        # Need to check for extra spacing between words also
+        answer = re.sub(' +', ' ', answer)
+
 
         question_id = int(request.POST['question-id'])
         question_num = int(request.POST['question-num'])-1
@@ -188,9 +192,16 @@ class ConstructGame(LoginRequiredMixin, UpdateItemsMixin, LoadQuestionsMixin, In
         status.currentQuestion = int(question_num + 1)
         status.save()
 
+        correct_answer2 = correct_answer
+        #Remove punctuation from correct answer if missing from answer
+        if correct_answer.startswith('¿' or '¡'):
+            if not answer.startswith('¿' or '¡'):
+                correct_answer2 = correct_answer[1:-1]
 
 
-        if correct_answer == answer:
+
+
+        if correct_answer2 == answer:
             status, created = PlayerStatus.objects.get_or_create(user=self.request.user)
             status.currentScore = int(status.currentScore) + 1
             status.save()
@@ -262,15 +273,20 @@ class ConstructResult(LoginRequiredMixin, View):
         user = PlayerScore.objects.get(user=self.request.user)
         user.score = int(user.score) + game_score
 
+        # Add game points to current level points only if the game was played in the user's top level
+        if int(status.current_level) == int(user.level.level_number):
+            user.current_level_score = user.current_level_score + game_score
+
         # If points threshold is met for level user can level up
         level_detail = Levels.objects.filter(level_number=str(user.level)).first()
         print('level detail', level_detail)
-        if user.score >= level_detail.points_threshold:
+        if user.current_level_score >= level_detail.points_threshold:
             # level up
             # Get next level model
             levelUp = str(user.level.level_number + 1)
             levelUp_detail = Levels.objects.get(level_number=levelUp)
             user.level = levelUp_detail
+            user.current_level_score = 0
             request.session['level_up'] = True
 
         # get data results

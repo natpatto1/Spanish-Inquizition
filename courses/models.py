@@ -36,6 +36,7 @@ class Spanish(models.Model):
         Levels,
         on_delete=models.CASCADE,
     )
+    information = models.CharField(max_length=1000, blank=True)
     def __str__(self):
         return self.spanish_phrase
 
@@ -51,6 +52,7 @@ class PlayerScore(models.Model):
     )
     score = models.IntegerField(default=0)
     day_streak = models.IntegerField(default=0)
+    current_level_score = models.IntegerField(default=0)
 
     def __str__(self):
         return f"User-{self.user} | Level-{self.level} | Score {self.score}"

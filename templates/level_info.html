@@ -25,7 +25,7 @@
 
 <div class="container">
     <div class="row justify-content-around">
-        <div class="col-6 card" >
+        <div class="col-7 card" >
             <div class="d-flex p-2 bd-highlight justify-content-center">Learn {{ description }}</div>
 
         <table class="table table-hover table-striped">
@@ -35,6 +35,7 @@
       <th scope="col">Translation</th>
         <th scope="col">Ready to Review</th>
         <th scope="col">Listen</th>
+        <th scope="col"></th>
     </tr>
   </thead>
   <tbody>
@@ -46,6 +47,27 @@
       <td>{{ object.review_in }} day(s)</td>
       <td><a href="" class="say" name = "{{ object.spanish_phrase }}">listen</a>
           </td>
+      <td>{% if object.information != '' %}
+      <button class ="myBtn btn btn-primary" id="myBtn">i</button>
+          <div id="infoModal" class="modal infoModal">
+              <div class="modal-dialog modal-dialog-centered">
+
+
+        <!-- Modal content -->
+            <div class="modal-content ">
+
+                <div class="modal-header">
+                      <h5 class="modal-title">{{ object.spanish_phrase }}</h5>
+
+                  </div>
+                <div class="modal-body">
+                    <p>{{ object.information }}</p></div>
+                <div class="modal-footer"><button class="closeInfo btn btn-secondary">Close</button></div>
+            </div>
+            </div></div>
+
+
+      {% endif %}</td>
 
   </tr>
   {% endfor %}
@@ -54,6 +76,7 @@
         </table>
 
             <input type="hidden" value="{{ NumWords }}" id="words">
+            <input type="hidden" value="{{ NumInfo }}" id ='infos'>
             </div>
 
 
@@ -83,18 +106,45 @@
 <script>
     const options = document.getElementsByClassName('say');
     const words = document.getElementById('words').value;
+    const infos = document.getElementById('infos').value;
     var levelUp = document.getElementById('level_up').value;
     var span = document.getElementsByClassName("close")[0];
+    const span2 = document.getElementsByClassName("closeInfo");
+    const infoModal = document.getElementsByClassName("infoModal");
+    const btn = document.getElementsByClassName("myBtn");
     function listen(value) {
         var text = value;
         var msg = new SpeechSynthesisUtterance(text);
         msg.lang = 'es-SP';
         window.speechSynthesis.speak(msg);}
 
+    function info(i) {
+        infoModal[i].style.display = "block";
+        window.onclick = function(event) {
+        if (event.target == infoModal[i]) {
+        infoModal[i].style.display = "none";
+        }
+        };
+        }
+
+    function closeInformation(i){
+        $(infoModal[i]).hide();
+        $(".modal-backdrop").hide();}
+
     document.addEventListener("DOMContentLoaded", function() {
     for (let i = 0; i < words; i++) {
       options[i].addEventListener("click", function() {
         listen(options[i].name);
+      });
+      }
+    for (let i = 0; i < infos; i++) {
+      btn[i].addEventListener("click", function() {
+        info(i);
+      });
+      }
+      for (let i = 0; i < infos; i++) {
+      span2[i].addEventListener("click", function() {
+        closeInformation(i);
       });
       }
       if (levelUp == 'True'){
@@ -105,6 +155,10 @@
         $(".modal-backdrop").hide();
         };
        console.log(levelUp)
+
+
+
+
   });
 
 
