@@ -274,6 +274,7 @@ class CourseListView(LoginRequiredMixin, LoadQuestionsMixin, View):
             'level_threshold': level_points_threshold,
             'points': points_needed,
             'strength': strength,
+            'level_description': level_threshold.description
         }
 
         return render(request, self.template_name, context)
@@ -337,6 +338,7 @@ class SessionCalendar(HTMLCalendar):
             if day in self.sessions:
                 cssclass += ' filled'
                 body = ['<ul>']
+
 
                 return self.day_cell(cssclass, '%d %s' % (day, ''.join(body)))
             return self.day_cell(cssclass, day)
@@ -487,7 +489,7 @@ class LevelInfo(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin, View):
             ls = (spanish.spanish_phrase, due)
             ready_to_review.append(ls)
             if str(spanish.information) != '':
-                i =1 +1
+                i =i +1
 
 
 

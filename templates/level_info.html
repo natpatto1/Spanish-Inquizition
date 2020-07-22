@@ -119,6 +119,7 @@
         window.speechSynthesis.speak(msg);}
 
     function info(i) {
+        console.log(infos);
         infoModal[i].style.display = "block";
         window.onclick = function(event) {
         if (event.target == infoModal[i]) {
