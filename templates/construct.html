@@ -28,7 +28,7 @@
                 </div>
             </div>
             <div class="col-1">
-                <div class="circle" id="timer" value="" style="font-size: 50px;">15</div>
+                <div class="circle" id="timer" value="" style="font-size: 50px;">20</div>
     </div>
 
         </div>
@@ -47,7 +47,7 @@
             <input type="hidden" id="word-length" value="{{ word_length }}">
             <input type="hidden" id="sentence" value="{{ sentence }}">
             <input type ="hidden" id="correct-answer" value="{{ spanish }}">
-            <input class="mx-auto d-block" type="text" id="user-input" name="user_input" value ="">
+            <input class="mx-auto d-block" type="text" id="user-input" name="user_input" value ="" style="width:500px">
             <input type="hidden" id="lives" value="{{ lives }}">
 
 
@@ -83,15 +83,16 @@
     const question = document.getElementById('question');
     const submit = document.getElementById('submit');
     const response = document.getElementById('response');
-    var correct_answer = document.getElementById('correct-answer').value;
+    var correct_answer = document.getElementById('correct-answer').value.toLowerCase();
     var timerStop = 'False';
     const lives = document.getElementById('lives').value;
     const answer = document.getElementById('answer');
 
 
+
     const timeOut = 15000;
     const timer = document.getElementById('timer');
-    var timerCount = 15;
+    var timerCount = 20;
 
     function decreaseTimer() {
         timer.innerHTML = timerCount;
@@ -141,7 +142,7 @@
 
     function buttonSize(){
         if (sentence === 'True'){
-            document.getElementByClassName('option-btn').style.width='100px';};}
+            document.getElementByClassName('option-btn').style.width='500px';};}
 
     document.addEventListener("DOMContentLoaded", function() {
     for (let i = 0; i < letters; i++) {
@@ -161,7 +162,7 @@
         answer= answer.replace(/[?!¿¡]/g,"")
         correct_answer = correct_answer.replace(/[?!¿¡]/g,"")
         answer = answer.replace(/\s+/g, ' ').trim()
-        if (answer === correct_answer){
+        if (answer.toLowerCase() === correct_answer){
             response.innerHTML = 'Sucess!';
             response.style.color = '#32CD32';
             }

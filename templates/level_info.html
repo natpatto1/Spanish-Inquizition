@@ -116,6 +116,7 @@
         var text = value;
         var msg = new SpeechSynthesisUtterance(text);
         msg.lang = 'es-SP';
+        msg.rate = 0.8;
         window.speechSynthesis.speak(msg);}
 
     function info(i) {

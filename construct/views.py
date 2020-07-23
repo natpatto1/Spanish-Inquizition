@@ -199,7 +199,8 @@ class ConstructGame(LoginRequiredMixin, UpdateItemsMixin, LoadQuestionsMixin, In
                 correct_answer2 = correct_answer[1:-1]
 
 
-
+        answer = answer.lower()
+        correct_answer2 = correct_answer2.lower()
 
         if correct_answer2 == answer:
             status, created = PlayerStatus.objects.get_or_create(user=self.request.user)
