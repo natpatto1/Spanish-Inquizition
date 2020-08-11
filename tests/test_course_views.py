@@ -81,7 +81,7 @@ class TestViews(TestCase):
 
 
     def test_homepage_GET_level_up(self):
-        self.playerscore.score = 150
+        self.playerscore.current_level_score = 500
         self.playerscore.save()
 
         self.client.login(username='testuser', password='secret')
@@ -114,7 +114,7 @@ class TestViews(TestCase):
 
     def test_homepage_POST_over_threshold_level2(self):
         self.playerscore.level = self.level
-        self.playerscore.score = 150
+        self.playerscore.current_level_score = 500
         self.playerscore.save()
 
         self.client.login(username='testuser', password='secret')

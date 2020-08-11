@@ -5,8 +5,19 @@
 
 
 {% block content %}
-<BODY style="background-image:url(/static/smalltile.png);margin:3px;>
+<BODY style="background-image:url(/static/smalltile.png);margin:3px";>
 
+<div class="modal fade" id="gameoverModal" aria-hidden="true" data-toggle="modal" data-backdrop="static" data-keyboard="false" >
+    <div class="modal-dialog modal-dialog-centered" >
+  <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Gameover :(</h5>
+      </div>
+      <div class="modal-body"> Oh no, 3 strikes and Gameover!
+          <a href ="{% url 'level_info' %}">Go back to Topic page to play again.</a>
+      </div></div>
+    </div>
+</div>
 <div class="container">
     {% if messages %}
         {% for message in messages %}
@@ -137,12 +148,21 @@
         else if (lives == 1){
             document.getElementById('life-3').src ="{% static 'Dead.png' %}"
             document.getElementById('life-2').src ="{% static 'Dead.png' %}"
+        }
+        else if (lives == 0){
+            document.getElementById('life-3').src ="{% static 'Dead.png' %}"
+            document.getElementById('life-2').src ="{% static 'Dead.png' %}"
+            document.getElementById('life-1').src ="{% static 'Dead.png' %}"
         };
     }
+    function gameover(){
+    if (lives == 0){
+            $("#gameoverModal").modal('show');
+            }
+            else if (lives !=0){
+                decreaseTimer();};}
 
-    function buttonSize(){
-        if (sentence === 'True'){
-            document.getElementByClassName('option-btn').style.width='500px';};}
+
 
     document.addEventListener("DOMContentLoaded", function() {
     for (let i = 0; i < letters; i++) {
@@ -150,10 +170,8 @@
         addButton(options[i].innerHTML);
       });
       }
-
+      gameover();
       liveImages();
-      decreaseTimer();
-      buttonSize();
     });
 
 

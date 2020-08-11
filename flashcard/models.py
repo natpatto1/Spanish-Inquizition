@@ -35,6 +35,9 @@ class Questions(models.Model):
     distractor_two = models.CharField(max_length=100)
     distractor_three = models.CharField(max_length=100)
     distractor_four = models.CharField(max_length=100)
+    construct_one = models.CharField(max_length=100, default='')
+    construct_two = models.CharField(max_length=100, default='')
+    construct_three = models.CharField(max_length=100, default='')
 
     def __str__(self):
         return str(self.spanish_id)

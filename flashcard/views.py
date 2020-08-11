@@ -93,8 +93,17 @@ class FlashcardGame(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin,Upda
         # remainder of (question number, total number of questions)-  Serve the (remainder)th question for the level
         # This is for when there are less than 10 questions
 
-        n = int(question_num) % int(len(d))
-        data = d[n]
+        try:
+            n = int(question_num) % int(len(d))
+            data = d[n]
+        except:
+            level = self.initializeQuiz(request)
+            answered_data = self.load_data(level, self.request.user)
+            self.get_questions2(answered_data, level, request)
+            data = request.session['data']
+            d = json.loads(data)
+            n = int(question_num) % int(len(d))
+            data = d[n]
 
         english = Spanish.objects.filter(spanish_phrase=data['fields']['spanish_id']).values('english_translation').first()
 
@@ -204,9 +213,16 @@ class FlashcardGame(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin,Upda
 
         answered.save()
         if status.currentErrors >= 3:
-            return redirect('/game_over/')
+            system_messages = messages.get_messages(request)
+            for message in system_messages:
+                pass
+            system_messages.used = True
 
         if status.currentQuestion == 10:
+            system_messages = messages.get_messages(request)
+            for message in system_messages:
+                pass
+            system_messages.used = True
             request.session['initialized'] = False
             return redirect('/flashcard_result/')
 
@@ -261,6 +277,7 @@ class FlashcardResult(LoginRequiredMixin, View):
         status.currentQuestion = 0
         status.currentScore = 0
         status.current_level = 0
+        status.currentErrors = 0
         status.save()
         user.save()
         request.session['data'] = ""

@@ -181,8 +181,5 @@ class TestFlashcardViews(LoadQuestionsMixin, InitializeMixin, TestCase):
         self.assertTemplateUsed(response, 'flashcard_result.html')
         self.assertTemplateUsed(response, 'base.html')
 
-    def test_gamover_page(self):
-        self.client.login(username='testuser', password='secret')
-        response = self.client.get(reverse('game_over'))
-        self.assertEqual(response.status_code, 200)
+
 

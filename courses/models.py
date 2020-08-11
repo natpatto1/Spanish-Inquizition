@@ -37,6 +37,18 @@ class Spanish(models.Model):
         on_delete=models.CASCADE,
     )
     information = models.CharField(max_length=1000, blank=True)
+    type_choices = (
+        ('verb', 'verb'),
+        ('noun', 'noun'),
+        ('pronoun', 'pronoun'),
+        ('adjective/adverb', 'adjective/adverb'),
+        ('question', 'question'),
+        ('phrase','phrase'),
+        ('greeting','greeting'),
+        ('article','article'),
+        ('preposition','preposition'),
+    )
+    type = models.CharField(max_length=200, null=False, choices=type_choices, default='')
     def __str__(self):
         return self.spanish_phrase
 

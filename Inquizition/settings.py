@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'flashcard.apps.FlashcardConfig',
     'construct.apps.ConstructConfig',
     'bootstrapform',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [

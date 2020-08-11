@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse, resolve
 from courses.views import CourseListView, UserCourses, LevelInfo, ScoreBoard
-from flashcard.views import FlashcardResult, FlashcardGame, GameOver
+from flashcard.views import FlashcardResult, FlashcardGame
 from django.contrib.auth import get_user_model
 from construct.views import ConstructGame, ConstructResult
 
@@ -58,10 +58,6 @@ class TestFlashcardUrls(TestCase):
         url = reverse('flashcard_result')
         self.assertEqual(resolve(url).func.view_class, FlashcardResult)
 
-    def test_gameover_page_url_is_resolved(self):
-        self.client.login(username='testuser', password='secret')
-        url = reverse('game_over')
-        self.assertEqual(resolve(url).func.view_class, GameOver)
 
 class TestConstructUrls(TestCase):
     def setUp(self):

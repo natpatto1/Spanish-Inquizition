@@ -121,18 +121,31 @@ class ConstructGame(LoginRequiredMixin, UpdateItemsMixin, LoadQuestionsMixin, In
         data = d[n]
 
 
+
+
+
+
         english = Spanish.objects.filter(spanish_phrase=data['fields']['spanish_id']).values(
             'english_translation').first()
 
         spanish = data['fields']['spanish_id']
+        print('spanish', spanish)
+        print('construct distractor 1', data['fields']['construct_one'])
         #This makes a list of spanish split into elements in order to decide if it should be split by character of word
         spanishwords = spanish.split()
         #if len(spanishwords) > 2 and question_num % 3 != 1:
-        if len(spanishwords) > 2:
+        if len(spanishwords) > 1:
             if '?' in spanish:
                 spanishwords = spanish[1:-1].split()
                 spanishwords = spanishwords + ['?', '¿']
             words = set(spanishwords)
+            # Get phrase distractors if exist
+            if data['fields']['construct_one'] != '':
+                words.add(data['fields']['construct_one'])
+                if data['fields']['construct_two'] != '':
+                    words.add(data['fields']['construct_two'])
+                    if words.add(data['fields']['construct_three']) != '':
+                        words.add(data['fields']['construct_one'])
             p = sample(words, (len(words)))
             sentence = True
 
@@ -201,18 +214,22 @@ class ConstructGame(LoginRequiredMixin, UpdateItemsMixin, LoadQuestionsMixin, In
 
         answer = answer.lower()
         correct_answer2 = correct_answer2.lower()
+        quality = self.findQuality(answer, correct_answer, sentence)
 
         if correct_answer2 == answer:
             status, created = PlayerStatus.objects.get_or_create(user=self.request.user)
-            status.currentScore = int(status.currentScore) + 1
+            status.currentScore = int(status.currentScore) + 2
             status.save()
             messages.success(request, "Yohoo! Correct answer, keep up the streak :)")
+        elif quality == 4:
+            status.currentScore = int(status.currentScore) + 1
+            status.save()
         else:
             status.currentErrors += 1
             status.save()
             messages.error(request, "Bummer! Wrong answer, try again :(")
 
-        quality = self.findQuality(answer, correct_answer, sentence)
+
 
 
 
@@ -248,9 +265,17 @@ class ConstructGame(LoginRequiredMixin, UpdateItemsMixin, LoadQuestionsMixin, In
 
 
         if status.currentErrors >= 3:
-            return redirect('/game_over/')
+            system_messages = messages.get_messages(request)
+            for message in system_messages:
+                pass
+            system_messages.used = True
+
 
         if status.currentQuestion == 10:
+            system_messages = messages.get_messages(request)
+            for message in system_messages:
+                pass
+            system_messages.used = True
             request.session['initialized'] = False
             return redirect('/construct/construct_result/')
 
@@ -299,6 +324,7 @@ class ConstructResult(LoginRequiredMixin, View):
         status.currentQuestion = 0
         status.current_level = 0
         status.currentScore = 0
+        status.currentErrors = 0
         status.save()
         user.save()
         request.session['data'] = ""

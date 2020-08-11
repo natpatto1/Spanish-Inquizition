@@ -14,11 +14,13 @@ from random import shuffle
 from django.core import serializers
 from django.utils import timezone
 from datetime import datetime, date
+from django.db.models import Q
 import json
 from calendar import HTMLCalendar, monthrange
 from datetime import date, timedelta
 from itertools import groupby
 from django.utils.safestring import mark_safe
+from construct.models import Verbs, Pronouns, Article
 
 
 # Create your views here.
@@ -38,21 +40,101 @@ class LoadQuestionsMixin(object):
                 i = i + 1
         return distractors
 
+    def load_distractors2(self,spanish_phrase):
+
+        type = spanish_phrase.type
+        level = str(spanish_phrase.level_number)
+        phrase = str(spanish_phrase.spanish_phrase)
+        distractors = Spanish.objects.filter(Q(type=type, level_number= level) & ~Q(spanish_phrase=phrase))[:3]
+        print('first', distractors)
+
+        #There might not always be all the same types in level
+        need = 3 - (len(distractors))
+        print('need', need)
+        if need != 0:
+            distractors2 = Spanish.objects.filter(Q(type=type) & ~Q(level_number =level))[:need]
+            print('got', distractors2)
+            distractors = distractors | distractors2
+            print('got', distractors2)
+
+        distractors_list = []
+        for item in distractors:
+            distractors_list.append(str(item.spanish_phrase))
+
+        return distractors_list
+
+    def load_construct_distractors(self,spanish_phrase):
+        #break up the phrase
+        words = spanish_phrase.spanish_phrase.split()
+        if len(words) == 1:
+            return
+
+        distractors = []
+        for word in words:
+            word = word.strip('?¿!¡')
+            word = word.lower()
+            #search verbs
+            verb_distractor = Verbs.objects.filter(Q(infinitive=word) | Q(yo=word) | Q(tú=word)
+                                                   | Q(usted_él_ella=word) | Q(nosotros_nosotras=word)
+                                                   | Q(vosotros_vosotras = word) | Q(ustedes_ellos_ellas = word)).first()
+            if verb_distractor:
+                random_verb_conjugations = [verb_distractor.infinitive, verb_distractor.yo, verb_distractor.tú,
+                                            verb_distractor.usted_él_ella, verb_distractor.nosotros_nosotras]
+                if word in random_verb_conjugations:
+                    random_verb_conjugations.remove(word)
+                distractors.append(random.choice(random_verb_conjugations))
+
+            #Want to take random infinitive or conjugation
+
+            #search pronouns
+            pronoun = Pronouns.objects.filter(spanish= word).first()
+            if pronoun:
+                pronoun_distractor = Pronouns.objects.filter(Q(person = pronoun.person,
+                                                            pronoun_type = pronoun.pronoun_type) &
+                                                             ~Q(spanish = pronoun.spanish)).first()
+                if pronoun_distractor:
+                    distractors.append(pronoun_distractor.spanish)
+                else:
+                    pronoun_distractor = Pronouns.objects.filter(Q(pronoun_type=pronoun.pronoun_type) &
+                                                                 ~Q(spanish=pronoun.spanish)).first()
+                    if pronoun_distractor:
+                        distractors.append(pronoun_distractor.spanish)
+            article = Article.objects.filter(Q(spanish= word)).first()
+            if article:
+                article = Article.objects.filter(~Q(spanish=word)).order_by('?').first()
+                distractors.append(article.spanish)
+
+        return distractors
+
+
     def get_questions2(self, answered_data, level, request):
         # need to turn list into a list of spanish objects
         spanish = Spanish.objects.filter(spanish_phrase__in=answered_data).all()
 
         for item in spanish:
             question, created = Questions.objects.get_or_create(spanish_id=item)
-            distract = self.load_distractors(item.spanish_phrase)
+
+            distract = self.load_distractors2(item)
+            construct_distractors = self.load_construct_distractors(item)
+
+
+
             distract.append(item.spanish_phrase)
             random.shuffle(distract)
+
             question.level = level
             question.correct_answer = item.spanish_phrase
             question.distractor_one = distract[0]
             question.distractor_two = distract[1]
             question.distractor_three = distract[2]
             question.distractor_four = distract[3]
+            if construct_distractors:
+                question.construct_one = construct_distractors[0]
+                if len(construct_distractors) > 1:
+                    question.construct_two = construct_distractors[1]
+                    if len(construct_distractors) > 2:
+                        question.correct_three = construct_distractors[2]
+
             question.save()
 
 
@@ -177,21 +259,22 @@ class InitializeMixin(object):
         return maxLevel
 
 
+
 def streak(session_object, user, streak_length):
     date = session_object.session
     yesterday = date - timedelta(days=1)
     result = UserSessions.objects.filter(user=user,
-                                         session=str(yesterday)).all()
+                                             session=str(yesterday)).all()
     if len(result) == 0:
-        return streak_length
+            return streak_length
     else:
         streak_length += 1
         return streak(result[0], user, streak_length)
 
-
 class CourseListView(LoginRequiredMixin, LoadQuestionsMixin, View):
     template_name = 'home.html'
     login_url = 'login'
+
 
     def get(self, request):
         user = self.request.user
@@ -204,6 +287,8 @@ class CourseListView(LoginRequiredMixin, LoadQuestionsMixin, View):
         initialized.save()
 
         request.session['level_up'] = False
+
+
 
         level_and_score = PlayerScore.objects.filter(user=user).first()
         if level_and_score is None:
@@ -233,10 +318,10 @@ class CourseListView(LoginRequiredMixin, LoadQuestionsMixin, View):
         current_streak = streak(latest_session, self.request.user, streak_length)
         # Update user score for longest session
 
-        status, created = PlayerScore.objects.get_or_create(user=self.request.user)
-        if status.day_streak < current_streak:
-            status.day_streak = current_streak
-            status.save()
+        #status, created = PlayerScore.objects.get_or_create(user=self.request.user)
+        if level_and_score.day_streak < current_streak:
+            level_and_score.day_streak = current_streak
+            level_and_score.save()
 
         # Find strength for each level/topic
         now = timezone.now()
@@ -324,32 +409,38 @@ class CourseListView(LoginRequiredMixin, LoadQuestionsMixin, View):
             return HttpResponse(request.POST)
 
 
-class SessionCalendar(HTMLCalendar):
+class SessionCalendar(LoginRequiredMixin, HTMLCalendar):
 
     def __init__(self, sessions):
         super(SessionCalendar, self).__init__()
         self.sessions = self.group_by_day(sessions)
 
+
+
     def formatday(self, day, weekday):
+
         if day != 0:
             cssclass = self.cssclasses[weekday]
             if date.today() == date(self.year, self.month, day):
                 cssclass += ' today'
             if day in self.sessions:
                 cssclass += ' filled'
-                body = ['<ul>']
 
-
-                return self.day_cell(cssclass, '%d %s' % (day, ''.join(body)))
+                return self.day_cell(cssclass, '%d' % (day))
             return self.day_cell(cssclass, day)
-        return self.day_cell('noday', '&nbsp;')
+        return self.day_cell('noday', '')
 
     def formatmonth(self, year, month):
-        self.year, self.month = year, month
+        self.year = year
+        self.month = month
+
         return super(SessionCalendar, self).formatmonth(year, month)
+
 
     def group_by_day(self, psessions):
         field = lambda session: session.session.day
+        
+
         return dict(
             [(day, list(items)) for day, items in groupby(psessions, field)]
         )
@@ -359,43 +450,43 @@ class SessionCalendar(HTMLCalendar):
 
 
 def named_month(pMonthNumber):
-    """
-    Return the name of the month, given the month number
-    """
+
     return date(1900, pMonthNumber, 1).strftime('%B')
 
 
-class UserCourses(LoginRequiredMixin, View, ):
+class UserCourses(LoginRequiredMixin, View):
     template_name = 'profile.html'
 
     def get(self, request, **kwargs):
         all_sessions = UserSessions.objects.filter(user=self.request.user)
         session_arr = []
 
-        try:
-            lYear = self.kwargs['year']
-            lMonth = self.kwargs['month']
-        except:
-            lToday = datetime.now()
-            lYear = int(lToday.year)
-            lMonth = int(lToday.month)
 
-        lCalendarFromMonth = datetime(lYear, lMonth, 1)
-        lCalendarToMonth = datetime(lYear, lMonth, monthrange(lYear, lMonth)[1])
-        lContestEvents = UserSessions.objects.filter(session__gte=lCalendarFromMonth, session__lte=lCalendarToMonth)
-        lCalendar = SessionCalendar(lContestEvents).formatmonth(lYear, lMonth)
-        lPreviousYear = lYear
-        lPreviousMonth = lMonth - 1
-        if lPreviousMonth == 0:
-            lPreviousMonth = 12
-            lPreviousYear = lYear - 1
-        lNextYear = lYear
-        lNextMonth = lMonth + 1
-        if lNextMonth == 13:
-            lNextMonth = 1
-            lNextYear = lYear + 1
-        lYearAfterThis = lYear + 1
-        lYearBeforeThis = lYear - 1
+        try:
+            year = self.kwargs['year']
+            month = self.kwargs['month']
+        except:
+            today = datetime.now()
+            year = int(today.year)
+            month = int(today.month)
+
+        calendarFromMonth = datetime(year, month, 1)
+        calendarToMonth = datetime(year, month, monthrange(year, month)[1])
+        sessionEvents = UserSessions.objects.filter(user = self.request.user,
+                                                     session__gte=calendarFromMonth, session__lte=calendarToMonth)
+        calendar = SessionCalendar(sessionEvents).formatmonth(year, month)
+        previousYear = year
+        previousMonth = month - 1
+        if previousMonth == 0:
+            previousMonth = 12
+            previousYear = year - 1
+        nextYear = year
+        nextMonth = month + 1
+        if nextMonth == 13:
+            nextMonth = 1
+            nextYear = year + 1
+        yearAfterThis = year + 1
+        yearBeforeThis = year - 1
 
         latest_session = UserSessions.objects.latest('session')
         streak_length = 1
@@ -405,20 +496,20 @@ class UserCourses(LoginRequiredMixin, View, ):
         context = {
             'course_list': PlayerScore.objects.filter(user=self.request.user),
             'user': self.request.user,
-            'all_sessions': all_sessions,
-            'dates': json.dumps(session_arr),
-            'Calendar': mark_safe(lCalendar),
-            'Month': lMonth,
-            'MonthName': named_month(lMonth),
-            'Year': lYear,
-            'PreviousMonth': lPreviousMonth,
-            'PreviousMonthName': named_month(lPreviousMonth),
-            'PreviousYear': lPreviousYear,
-            'NextMonth': lNextMonth,
-            'NextMonthName': named_month(lNextMonth),
-            'NextYear': lNextYear,
-            'YearBeforeThis': lYearBeforeThis,
-            'YearAfterThis': lYearAfterThis,
+            #'all_sessions': all_sessions,
+            #'dates': json.dumps(session_arr),
+            'Calendar': mark_safe(calendar),
+            'Month': month,
+            'MonthName': named_month(month),
+            'Year': year,
+            'PreviousMonth': previousMonth,
+            'PreviousMonthName': named_month(previousMonth),
+            'PreviousYear': previousYear,
+            'NextMonth': nextMonth,
+            'NextMonthName': named_month(nextMonth),
+            'NextYear': nextYear,
+            'YearBeforeThis': yearBeforeThis,
+            'YearAfterThis': yearAfterThis,
             'current_streak': current_streak,
             'longest_streak': longest_streak,
 
@@ -441,6 +532,7 @@ class LevelInfo(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin, View):
         initialized.currentScore = 0
         initialized.currentErrors = 0
         initialized.save()
+
 
 
         #f results is not empty it means that user has already started playing round and questions need to be reset to empty
@@ -478,18 +570,35 @@ class LevelInfo(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin, View):
         # Count number of items with additional information also (i)
         i = 0
         ready_to_review = list()
-        for item in spanish_list:
-            spanish = Spanish.objects.get(spanish_phrase=item)
-            answer = Answered.objects.filter(user=self.request.user,
-                                             spanish_id=spanish).first()
-            review = answer.review_time
-            today = timezone.now()
-            due = review - today
-            due = due.days
-            ls = (spanish.spanish_phrase, due)
-            ready_to_review.append(ls)
-            if str(spanish.information) != '':
-                i =i +1
+        #answeredstuff = Answered.objects.filter(parent__in=spanish_list)
+
+        #answeredstuff = Answered.objects.all().select_related("user")
+        today = timezone.now()
+        answeredstuff = Answered.objects.filter(spanish_id__level_number__level_number=current_level)
+        answeredstuff = answeredstuff.filter(user=self.request.user)
+        for item in answeredstuff:
+             review = item.review_time
+             due = review - today
+             due = due.days
+             ls = (item.spanish_id, due)
+             ready_to_review.append(ls)
+             if str(spanish.information) != '':
+                 i =i +1
+
+
+        #
+        # for item in spanish_list:
+        #     spanish = Spanish.objects.get(spanish_phrase=item)
+        #     answer = Answered.objects.filter(user=self.request.user,
+        #                                      spanish_id=spanish).first()
+        #     review = answer.review_time
+        #     today = timezone.now()
+        #     due = review - today
+        #     due = due.days
+        #     ls = (spanish.spanish_phrase, due)
+        #     ready_to_review.append(ls)
+        #     if str(spanish.information) != '':
+        #         i =i +1
 
 
 
