@@ -61,6 +61,6 @@ class Answered(models.Model):
 
 
     def __str__(self):
-        return (" level %s - %s " %(str(self.level_int), str(self.spanish_id)))
+        return ("%s level %s - %s " %(self.user, str(self.level_int), str(self.spanish_id)))
 
 

@@ -5,7 +5,8 @@
 
 
 {% block content %}
-<BODY style="background-image:url(/static/smalltile.png);margin:3px";>
+<BODY class = 'flashcard'>
+
 
 <div class="modal fade" id="gameoverModal" aria-hidden="true" data-toggle="modal" data-backdrop="static" data-keyboard="false" >
     <div class="modal-dialog modal-dialog-centered" >
@@ -99,6 +100,14 @@
     const lives = document.getElementById('lives').value;
     const answer = document.getElementById('answer');
 
+    var audioElement = document.createElement("audio");
+    audioElement.src = "https://dqktggxxlj4o5.cloudfront.net/static/win.mp3"
+
+    var audioElementLose = document.createElement("audio");
+    audioElementLose.src = "https://dqktggxxlj4o5.cloudfront.net/static/lose.mp3"
+
+    var audioElementGameover = document.createElement("audio");
+    audioElementGameover.src = "https://dqktggxxlj4o5.cloudfront.net/static/gameover2.mp3"
 
 
     const timeOut = 15000;
@@ -158,6 +167,7 @@
     function gameover(){
     if (lives == 0){
             $("#gameoverModal").modal('show');
+            audioElementGameover.play()
             }
             else if (lives !=0){
                 decreaseTimer();};}
@@ -172,6 +182,8 @@
       }
       gameover();
       liveImages();
+
+
     });
 
 
@@ -183,10 +195,12 @@
         if (answer.toLowerCase() === correct_answer){
             response.innerHTML = 'Sucess!';
             response.style.color = '#32CD32';
+            audioElement.play()
             }
         else {
             response.innerHTML = correct_answer
             response.style.color = 'red';
+            audioElementLose.play()
             };
 
       stopTime();

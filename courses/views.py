@@ -21,6 +21,7 @@ from datetime import date, timedelta
 from itertools import groupby
 from django.utils.safestring import mark_safe
 from construct.models import Verbs, Pronouns, Article
+import calendar
 
 
 # Create your views here.
@@ -223,17 +224,24 @@ class LoadQuestionsMixin(object):
 
     def due_load(self, num, level, data_ls, user):
         # checks for items that are due today or overdue
+        rankings = dict()
         returned = list()
         today = timezone.now()
         check = Answered.objects.filter(user=user,
                                         level_int=level, ).values('spanish_id', 'review_time')
 
         for item in check:
-            if item['spanish_id'] not in data_ls:
-                if item['review_time'] < today:
+            if item['spanish_id'] not in data_ls:   #‘data_ls’ is items already added because they are 0 repetition.
+                if item['review_time'] <= today:
                     returned.append(item['spanish_id'])
+                    rankings[item['spanish_id']] = item['review_time']
 
-        return returned
+        rank = sorted(rankings.items(), key=lambda x: x[1])
+        rank[:num]
+        phrases = [x[0] for x in rank]
+        print('THIS IS RANKED DUE', phrases)
+
+        return phrases
 
 
 class InitializeMixin(object):
@@ -328,7 +336,7 @@ class CourseListView(LoginRequiredMixin, LoadQuestionsMixin, View):
         strength = dict()
         for num in range(1, int(level) + 1):
             answered = Answered.objects.filter(user=self.request.user,
-                                               level_int=num, ).values('review_time')
+                                               level_int=num, ).values('spanish_id','review_time')
 
             today = 0
             two_weeks = 0
@@ -340,7 +348,7 @@ class CourseListView(LoginRequiredMixin, LoadQuestionsMixin, View):
                 # If item needs to be reviewed in the next week
                 elif item['review_time'] < (now + timedelta(days=14)):
                     two_weeks += 1
-                elif item['review_time'] > (now + timedelta(days=14)):
+                elif item['review_time'] < (now + timedelta(days=14)):
                     two_weeks_plus += 1
             # If more than 3 words need to be reviewed today the topic strenght is week
             if today >= 3:
@@ -439,7 +447,7 @@ class SessionCalendar(LoginRequiredMixin, HTMLCalendar):
 
     def group_by_day(self, psessions):
         field = lambda session: session.session.day
-        
+
 
         return dict(
             [(day, list(items)) for day, items in groupby(psessions, field)]
@@ -448,10 +456,6 @@ class SessionCalendar(LoginRequiredMixin, HTMLCalendar):
     def day_cell(self, cssclass, body):
         return '<td class="%s">%s</td>' % (cssclass, body)
 
-
-def named_month(pMonthNumber):
-
-    return date(1900, pMonthNumber, 1).strftime('%B')
 
 
 class UserCourses(LoginRequiredMixin, View):
@@ -474,7 +478,7 @@ class UserCourses(LoginRequiredMixin, View):
         calendarToMonth = datetime(year, month, monthrange(year, month)[1])
         sessionEvents = UserSessions.objects.filter(user = self.request.user,
                                                      session__gte=calendarFromMonth, session__lte=calendarToMonth)
-        calendar = SessionCalendar(sessionEvents).formatmonth(year, month)
+        Calendar = SessionCalendar(sessionEvents).formatmonth(year, month)
         previousYear = year
         previousMonth = month - 1
         if previousMonth == 0:
@@ -488,9 +492,13 @@ class UserCourses(LoginRequiredMixin, View):
         yearAfterThis = year + 1
         yearBeforeThis = year - 1
 
-        latest_session = UserSessions.objects.latest('session')
+        date = str(timezone.now().date())
+        latest_session = UserSessions.objects.filter(session = date).first()
         streak_length = 1
-        current_streak = streak(latest_session, self.request.user, streak_length)
+        if latest_session:
+            current_streak = streak(latest_session, self.request.user, streak_length)
+        else:
+            current_streak = 0
         longest_streak = PlayerScore.objects.filter(user=self.request.user).values('day_streak')[0]
 
         context = {
@@ -498,15 +506,15 @@ class UserCourses(LoginRequiredMixin, View):
             'user': self.request.user,
             #'all_sessions': all_sessions,
             #'dates': json.dumps(session_arr),
-            'Calendar': mark_safe(calendar),
+            'Calendar': mark_safe(Calendar),
             'Month': month,
-            'MonthName': named_month(month),
+            'MonthName': calendar.month_name[month],
             'Year': year,
             'PreviousMonth': previousMonth,
-            'PreviousMonthName': named_month(previousMonth),
+            'PreviousMonthName': calendar.month_name[previousMonth],
             'PreviousYear': previousYear,
             'NextMonth': nextMonth,
-            'NextMonthName': named_month(nextMonth),
+            'NextMonthName': calendar.month_name[nextMonth],
             'NextYear': nextYear,
             'YearBeforeThis': yearBeforeThis,
             'YearAfterThis': yearAfterThis,

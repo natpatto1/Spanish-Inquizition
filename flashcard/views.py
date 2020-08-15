@@ -116,6 +116,7 @@ class FlashcardGame(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin,Upda
                    'question':english['english_translation'],
                    'question_num': question_num + 1,
                    'level': data['fields']['level'],
+                   'correct': data['fields']['correct_answer'],
                    'options': [data['fields']['distractor_one'],
                                data['fields']['distractor_two'],
                                data['fields']['distractor_three'],
@@ -131,6 +132,7 @@ class FlashcardGame(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin,Upda
     def post(self, request):
         question_id = int(request.POST['question-id'])
         answer = request.POST['answer']
+        print(answer)
         answer = answer.strip()
 
         question_num = int(request.POST['question-num'])-1
@@ -236,6 +238,7 @@ class FlashcardResult(LoginRequiredMixin, View):
     def get(self,request):
         status, created = PlayerStatus.objects.get_or_create(user=self.request.user)
         game_score = int(status.currentScore)
+        print('game_score', game_score)
 
         #Add session to user session
         session, created = UserSessions.objects.get_or_create(user=self.request.user,

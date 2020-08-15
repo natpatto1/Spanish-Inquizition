@@ -3,12 +3,15 @@
 
 .home {
     margin:3px;
-    background-image: url(/static/tiles3.png);
-    background-repeat: no-repeat;
-    background-size: 100% 100%;
+    background-image: url(/static/tile4.png);
+    background-repeat: repeat;
     background-color: white;}
 
-
+.flashcard {
+    margin:3px;
+    background-image: url(/static/smalltile.png);
+    background-repeat: repeat;
+    background-color: white;}
 
 .level-btn:hover {
     border: 1px solid #888;

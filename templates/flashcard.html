@@ -8,8 +8,7 @@
 
 {% block content %}
 
-<BODY style="background-image:url(/static/smalltile.png); background-repeat: repeat;
-    margin:3px;">
+<BODY class = 'flashcard'>
 <div class="modal fade" id="gameoverModal" aria-hidden="true" data-toggle="modal" data-backdrop="static" data-keyboard="false" >
     <div class="modal-dialog modal-dialog-centered" >
   <div class="modal-content">
@@ -52,25 +51,27 @@
     <div class="card-header">
           Question {{ question_num }}
     </div>
-      <form id="question" class="card-body" action="{% url 'flashcard' %}" method="POST">
+      <form id="question" class="card-body" action="" method="POST">
           {% csrf_token %}
-          <h5 class="card-title text-center">{{ question }}</h5>
+
+
+          <h5 class="card-title text-center" id="english">{{ question }}</h5>
         <div>
 
           <input type="hidden" name="question-id" value="{{ number }}">
           <input type="hidden" name="question-num" value ="{{ question_num }}">
           <input type="hidden" name="level" value="{{ level }}">
           <input type="hidden" id="answer" name="answer" value="">
+            <input type="hidden" id="correct" value="{{ correct }}">
           </div>
 
-
-        <div>
+      </form>
+    <div>
           {% for option in options %}
           <button class = "btn btn-outline-success option-btn my-2 mx-auto d-block" style="width: 400">
           {{ option }}</button>
           {% endfor %}
         </div>
-      </form>
 
     <div class="text-center">
 <p><a href ="{% url 'level_info' %}" class="btn btn-primary">Exit</a></p>
@@ -87,10 +88,23 @@
   const timer = document.getElementById('timer');
   const options = document.getElementsByClassName('option-btn');
   const lives = document.getElementById('lives').value;
+  const english = document.getElementById('english').innerHTML;
+  const correct = document.getElementById('correct').value;
+
 
   var timerCount = 10;
 
+  var audioElement = document.createElement("audio");
+  audioElement.src = "https://dqktggxxlj4o5.cloudfront.net/static/win.mp3"
+
+  var audioElementLose = document.createElement("audio");
+  audioElementLose.src = "https://dqktggxxlj4o5.cloudfront.net/static/lose.mp3"
+
+  var audioElementGameover = document.createElement("audio");
+  audioElementGameover.src = "https://dqktggxxlj4o5.cloudfront.net/static/gameover2.mp3"
+
   function submitForm(value) {
+
     answer.value = value;
     question.submit();
   }
@@ -123,6 +137,7 @@
    function gameover(){
         if (lives == 0){
             $("#gameoverModal").modal('show');
+            audioElementGameover.play()
             }
             else if (lives !=0){
                 decreaseTimer();};
@@ -130,14 +145,25 @@
 
 
   document.addEventListener("DOMContentLoaded", function() {
+
+
     for (let i = 0; i < 4; i++) {
       options[i].addEventListener("click", function() {
+        value = (options[i].innerHTML).trimLeft();
+        if (value == correct){
+        audioElement.play();};
+
         submitForm(options[i].innerHTML);
       });
       }
     liveImages();
     gameover();
   });
+
+function mySubmit(e) {
+  console.log('test')
+}
+
 
 
 history.pushState(null, null, location.href );
