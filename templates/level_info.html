@@ -134,7 +134,7 @@
         $(".modal-backdrop").hide();}
 
     document.addEventListener("DOMContentLoaded", function() {
-    for (let i = 0; i < words; i++) {
+    for (let i = 0; i < words; i++) { //words is the total number of vocab item displayed
       options[i].addEventListener("click", function() {
         listen(options[i].name);
       });

@@ -90,7 +90,7 @@
   const lives = document.getElementById('lives').value;
   const english = document.getElementById('english').innerHTML;
   const correct = document.getElementById('correct').value;
-
+  var timerStop = 'False';
 
   var timerCount = 10;
 
@@ -103,21 +103,20 @@
   var audioElementGameover = document.createElement("audio");
   audioElementGameover.src = "https://dqktggxxlj4o5.cloudfront.net/static/gameover2.mp3"
 
-  function submitForm(value) {
 
-    answer.value = value;
-    question.submit();
-  }
 
   function decreaseTimer() {
     timer.innerHTML = timerCount;
     if(timerCount <= 0) {
       submitForm("timeout");
-    } else {
+    } else if(timerStop== 'False'){
       timerCount -= 1;
       setTimeout(decreaseTimer, 1000);
     }
   }
+  function stopTime(){
+        timerStop = 'True'; }
+
   function liveImages(){
         if (lives == 2){
             document.getElementById('life-3').src ="{% static 'Dead.png' %}";
@@ -145,25 +144,25 @@
 
 
   document.addEventListener("DOMContentLoaded", function() {
-
-
-    for (let i = 0; i < 4; i++) {
-      options[i].addEventListener("click", function() {
-        value = (options[i].innerHTML).trimLeft();
-        if (value == correct){
-        audioElement.play();};
-
-        submitForm(options[i].innerHTML);
-      });
-      }
     liveImages();
     gameover();
   });
 
-function mySubmit(e) {
-  console.log('test')
-}
 
+for (let i = 0; i < 4; i++){
+    options[i].addEventListener('click',function(){
+    answer.value = (options[i].innerHTML).trimLeft();
+    if (answer.value == correct){
+        audioElement.play();}
+    else {
+        audioElementLose.play()};
+    for (let i = 0; i < 4; i++){
+        options[i].disabled = true};
+
+    stopTime();
+
+    setTimeout(function(){question.submit()},1000);
+    });};
 
 
 history.pushState(null, null, location.href );

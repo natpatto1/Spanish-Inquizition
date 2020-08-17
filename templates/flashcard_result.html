@@ -77,9 +77,13 @@
   var levelUp = document.getElementById('level_up').value;
   var span = document.getElementsByClassName("close")[0];
 
+  var audioElement = document.createElement("audio");
+  audioElement.src = "https://dqktggxxlj4o5.cloudfront.net/static/levelup.mp3"
+
   document.addEventListener("DOMContentLoaded", function() {
       if (levelUp == 'True'){
-      $("#myModal").modal('show');};
+      $("#myModal").modal('show');
+      audioElement.play()};
 
       span.onclick = function() {
         $("#myModal").hide();

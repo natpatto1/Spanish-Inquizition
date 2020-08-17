@@ -127,8 +127,8 @@ class LoadQuestionsMixin(object):
             question.correct_answer = item.spanish_phrase
             question.distractor_one = distract[0]
             question.distractor_two = distract[1]
-            question.distractor_three = distract[2]
-            question.distractor_four = distract[3]
+            question.distractor_three = distract[-2]
+            question.distractor_four = distract[-1]
             if construct_distractors:
                 question.construct_one = construct_distractors[0]
                 if len(construct_distractors) > 1:
