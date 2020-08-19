@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+
+
+{% block content %}
+<body class="home">
+<div class="container">
+    <div class="row justify-content-around">
+        <div class="col-12">
+            <h1 class="text-center font-italic"><mark>"Nobody expects the Spanish InQuizition!"</mark></h1>
+        <p class="text-right">- Monty Python</p></div></div>
+    <div class="row justify-content-around">
+        <div class="col-12 card">
+            <div class="card-body">
+            <p>The Spanish InQuizition is broken down into topics.
+                To progress to the end of the course you need to complete topics by earning points in topic games.
+                On the homepage you can see the topics that are available to you. If a topic button is disabled (you can’t select it),
+                this means the topic hasn’t yet been unlocked. The bars around the topic icons (red, orange and/or green) are the topic strength,
+                this tells you how well you know and practice the topic. Try to maintain good topic strength in all your topics.
+                You can also see how many points you have earnt over the whole course and how many points you need to
+                earn from which topic to progress: </p>
+
+                <img align="left" src="https://dqktggxxlj4o5.cloudfront.net/static/points.png" alt="point score" style="width:250px;height:300px;">
+                <br>
+                <br>
+                <p align="right">Go ahead and select the first topic, ‘The Basics’.
+                    This will take you to the first topic page (If you ever want to return to the homepage or select the
+                    ‘Select a different Topic’ link). On the topic page you can see a full list of all the vocabulary included
+                    in the topic:</p>
+                <img align="right" src="https://dqktggxxlj4o5.cloudfront.net/static/vocab.png" alt="vocab" style="width:500px;height:250px;">
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <p>You can see the Spanish, it’s English translation, you can listen to the spoken Spanish by selecting the ‘listen’ link.
+                    You can also see when the vocabulary is next expected to be reviewed. Keep an eye on this, if many items are overdue
+                    (have negative day values)
+                    the topic strength will become weaker. If there is any extra information about the vocabulary there will also be an
+                    <kbd style="background-color:blue;">i</kbd> information button to view this. </p>
+                <p>The topic page is also where you can find the games to earn points and progress! There is a flashcard game and a construct game.</p>
+                <p>Launch a game session (10 questions) by clicking an icon link.
+                    For a <b>flashcard question</b> you will be presented with the English and <b>4 Spanish options</b>:</p>
+                <img align="left" src="https://dqktggxxlj4o5.cloudfront.net/static/flash_question.png" alt="flash_question" style="width:400px;height:250px;">
+                <br>
+                <p> Try to select the correct Spanish translation of the English. For every correct answer you will be awarded<b> 1 point</b>. </p>
+                <br>
+                <br>
+                <p> For a <b>construct question</b> you will also be presented with the English.
+                    If this is a single word you will also be given the letters that make up the Spanish translation as buttons.
+                    Select these or type the answer into the text field. Select the <kbd style="background-color:green;">Submit</kbd> button when
+                    you are happy with your answer:</p>
+                <br>
+                <img align="right" src="https://dqktggxxlj4o5.cloudfront.net/static/construct_word.png" alt="flash_question" style="width:500px;height:250;">
+                <br>
+                <br>
+                <br>
+                <p align="left">If the presented English is more than one word you will be given the words that make up the
+                    phrase or sentence as buttons. But be careful (<i>¡tener cuidado!</i>) there will also be some extra words to
+                    distract you! Again, you can select these buttons or type the phrase or sentence into the text field and select the
+                    <kbd style="background-color:green;">Submit</kbd> button when you are happy with your answer (and don’t worry too much about punctuation):</p>
+                <br>
+
+                <img align="left" src="https://dqktggxxlj4o5.cloudfront.net/static/construct_phrase.png" alt="flash_question" style="width:500px;height:250;">
+                <br>
+                <p align="right">For every correct construct answer you will be awarded <b>2 points</b>, it’s more difficult but worth it!</p>
+                <br>
+
+                <p align="right">If you answer incorrectly or run out of time you will lose a life (the guys with the hats are your lives).
+                    <b>If you lose 3 lives, it’s game over and you will win 0 points!</b></p>
+                <br>
+                <br>
+                <br>
+                <br>
+
+                <p align="left">If you make it through all 10 questions the<b> results page</b> will show you how you did and how many points earnt:</p>
+                <img src="https://dqktggxxlj4o5.cloudfront.net/static/results.png" alt="flash_question" style="width:650px;height:400;">
+                <p>Each item you answered will be shown, if you answered correctly it will be green and incorrectly red. There is also a scale of correctness:</p>
+<ul>
+    <li>5 = Perfection :)</li>
+    <li>4 = Almost perfect</li>
+    <li>3 = Passable</li>
+    <li>2 = You’ve made a few mistakes</li>
+    <li>1 = You need to practice more!</li>
+    <li>0 = You didn’t even try :( </li>
+</ul>
+                <p>You can play another game by selecting the <kbd style="background-color:blue;">Play again</kbd> link or go back to the topic page by selecting
+                    the <kbd style="background-color:blue;">Back to Topic Menu</kbd> link.</p>
+
+<p>Try to play at least 1 successful game a day and you can maintain a streak! You can see your current streak and longest streak,
+    in days, on the ‘Your Activity Streak’ page which is accessible via the header bar drop-down menu:</p>
+
+
+<img align="right" src="https://dqktggxxlj4o5.cloudfront.net/static/dropdown.png" alt="flash_question" style="width:200px;height:250;">
+
+                <p align="left">And you can also see a calendar of all the days you have successfully completed at least 1 game.</p>
+
+<p>For anyone competitive out there, you can also see how you rank compared to other players on the ‘Scoreboard’ page, accessible via the header bar drop-down menu.<p>
+<br>
+<p>You’re ready to start practicing! Please let us know how you get on by contacting us on our <a href="https://twitter.com/SInquizition"> twitter account</a>.
+</p>
+            </div>
+        </div></div>
+
+
+
+</div>
+
+
+
+</body>
+{% endblock content %}

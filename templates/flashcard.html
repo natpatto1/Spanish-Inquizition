@@ -108,7 +108,8 @@
   function decreaseTimer() {
     timer.innerHTML = timerCount;
     if(timerCount <= 0) {
-      submitForm("timeout");
+      answer.value = 'timeout'
+      setTimeout(function(){question.submit()},500);
     } else if(timerStop== 'False'){
       timerCount -= 1;
       setTimeout(decreaseTimer, 1000);
@@ -151,6 +152,8 @@
 
 for (let i = 0; i < 4; i++){
     options[i].addEventListener('click',function(){
+    timerStop = 'True'
+    stopTime();
     answer.value = (options[i].innerHTML).trimLeft();
     if (answer.value == correct){
         audioElement.play();}

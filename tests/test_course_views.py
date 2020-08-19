@@ -6,7 +6,8 @@ from flashcard.models import Answered
 import json
 import datetime
 from courses.views import LoadQuestionsMixin, InitializeMixin
-
+from django.utils import timezone
+from datetime import date, timedelta
 
 
 class TestViews(TestCase):
@@ -27,11 +28,13 @@ class TestViews(TestCase):
             points_threshold='200',
             description='test2'
         )
-
+        self.today = timezone.now().date()
         self.userSession = UserSessions.objects.create(
             user = self.user,
-            session = datetime.datetime.now().date(),
+            session = self.today
         )
+
+
 
         self.spanish = Spanish.objects.create(
             spanish_phrase = 'testing',
@@ -78,6 +81,11 @@ class TestViews(TestCase):
     def test_homepage_streak(self):
         self.client.login(username='testuser', password='secret')
         response = self.client.get(reverse('home'))
+        self.playerscore.refresh_from_db()
+
+
+        #Streak should calculate as 1 as only one instance in user session
+        self.assertEqual(self.playerscore.day_streak,1)
 
 
     def test_homepage_GET_level_up(self):
@@ -94,6 +102,8 @@ class TestViews(TestCase):
 
     def test_homepage_POST(self):
         self.client.login(username='testuser', password='secret')
+        #As the level select buttons are actually icons the post form also contains where the
+        #user selected the icon on the x and y axis.
         post_response = self.client.post('/', {'level_1.x': ['72'], 'level_1.y': ['79']})
 
         self.assertEqual(post_response.status_code, 302)
@@ -194,6 +204,13 @@ class TestViews(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'level_info.html')
+
+    def test_user_guide_page_GET(self):
+        self.client.login(username='testuser', password='secret')
+        response = self.client.get(reverse('instructions'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'instructions.html')
 
 
 

@@ -132,7 +132,7 @@ class FlashcardGame(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin,Upda
     def post(self, request):
         question_id = int(request.POST['question-id'])
         answer = request.POST['answer']
-        print(answer)
+        print('answer',answer)
         answer = answer.strip()
 
         question_num = int(request.POST['question-num'])-1
@@ -166,28 +166,28 @@ class FlashcardGame(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin,Upda
                                                            spanish_id =spanishObj,
                                                            level_int= spanishObj.level_number.level_number)
 
-
+        status, created = PlayerStatus.objects.get_or_create(user=self.request.user)
         # If user didn't attempt then quality is 0
         if answer == "timeout":
             quality = 0
             messages.error(request, "Bummer! Wrong answer, try again :(")
+            status.currentErrors = int(status.currentErrors) + 1
 
         else:
             if correct_answer == answer:
                 quality = 5
-                status, created = PlayerStatus.objects.get_or_create(user=self.request.user)
+
                 status.currentScore = int(status.currentScore) + 1
-                status.save()
+
                 messages.success(request, "Yohoo! Correct answer, keep up the streak :)")
             else:
                 quality = 1
-                status, created = PlayerStatus.objects.get_or_create(user=self.request.user)
                 status.currentErrors = int(status.currentErrors) + 1
-                status.save()
+
                 # If the quality of response was lower than 3 then start repetitions from beginning
                 # without changing EF
                 messages.error(request, "Bummer! Wrong answer, try again :(")
-
+        status.save()
         #Create new sessions data of results with quality score to show in results page
 
         saved_results = request.session['results']

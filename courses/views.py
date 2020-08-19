@@ -273,6 +273,7 @@ def streak(session_object, user, streak_length):
     yesterday = date - timedelta(days=1)
     result = UserSessions.objects.filter(user=user,
                                              session=str(yesterday)).all()
+    print('YESTERDAYS RESULT number 1', result)
     if len(result) == 0:
             return streak_length
     else:
@@ -322,13 +323,20 @@ class CourseListView(LoginRequiredMixin, LoadQuestionsMixin, View):
 
         # Find streak length
         streak_length = 1
-        latest_session = UserSessions.objects.latest('session')
-        current_streak = streak(latest_session, self.request.user, streak_length)
+        try:
+            latest_session = UserSessions.objects.filter(user= user).latest('session')
+            first_time = False
+            self.current_streak = streak(latest_session, self.request.user, streak_length)
+        except:
+            first_time = True
+            self.current_streak = 0
+
+
         # Update user score for longest session
 
         #status, created = PlayerScore.objects.get_or_create(user=self.request.user)
-        if level_and_score.day_streak < current_streak:
-            level_and_score.day_streak = current_streak
+        if level_and_score.day_streak < self.current_streak:
+            level_and_score.day_streak = self.current_streak
             level_and_score.save()
 
         # Find strength for each level/topic
@@ -367,7 +375,8 @@ class CourseListView(LoginRequiredMixin, LoadQuestionsMixin, View):
             'level_threshold': level_points_threshold,
             'points': points_needed,
             'strength': strength,
-            'level_description': level_threshold.description
+            'level_description': level_threshold.description,
+            'first_time': first_time,
         }
 
         return render(request, self.template_name, context)
@@ -378,8 +387,6 @@ class CourseListView(LoginRequiredMixin, LoadQuestionsMixin, View):
         if 'level_1.x' in request.POST:
             current.current_level = 1
             current.save()
-            answered_data = self.load_data(1, self.request.user)
-            questions = self.get_questions2(answered_data, 1, request)
             return redirect('courses/level_info/')
         if 'level_2.x' in request.POST:
             if level_and_score.level.level_number < 2:
@@ -497,8 +504,10 @@ class UserCourses(LoginRequiredMixin, View):
         streak_length = 1
         if latest_session:
             current_streak = streak(latest_session, self.request.user, streak_length)
+
         else:
             current_streak = 0
+
         longest_streak = PlayerScore.objects.filter(user=self.request.user).values('day_streak')[0]
 
         context = {
@@ -521,6 +530,7 @@ class UserCourses(LoginRequiredMixin, View):
             'current_streak': current_streak,
             'longest_streak': longest_streak,
 
+
         }
         return render(request, self.template_name, context)
 
@@ -542,23 +552,27 @@ class LevelInfo(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin, View):
         initialized.save()
 
 
-
-        #f results is not empty it means that user has already started playing round and questions need to be reset to empty
-        result = request.session['results']
-        if bool(result) == True:
-            #results is not empty - reset
-            results = dict()
-            request.session['results'] = results
-            level = initialized.current_level
-            answered_data = self.load_data(level, self.request.user)
-            self.get_questions2(answered_data, level, request)
-            print('user quit game before ending')
+        if initialized.current_level != 0:
+            current_level = int(initialized.current_level)
+            answered_data = self.load_data(current_level, self.request.user)
+            questions = self.get_questions2(answered_data, current_level, request)
 
         if initialized.current_level == 0:
             level = self.initializeQuiz(request)
             answered_data = self.load_data(level, self.request.user)
             self.get_questions2(answered_data, level, request)
             print('had not been intialized')
+
+        # if results is not empty it means that user has already started playing round and questions need to be reset to empty
+        result = request.session['results']
+        if len(result) != 0:
+            # results is not empty - reset
+            results = dict()
+            request.session['results'] = results
+            level = initialized.current_level
+            answered_data = self.load_data(level, self.request.user)
+            self.get_questions2(answered_data, level, request)
+            print('user quit game before ending')
 
         level = PlayerStatus.objects.filter(user=self.request.user).first()
         current_level = int(level.current_level)
@@ -661,5 +675,17 @@ class ScoreBoard(View):
             'ranked': rankedUsers,
 
         }
+
+        return render(request, self.template_name, context)
+
+class UserGuide(View):
+    template_name = 'instructions.html'
+
+
+    def get(self, request):
+
+
+
+        context = {}
 
         return render(request, self.template_name, context)

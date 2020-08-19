@@ -96,6 +96,7 @@ class LoadTest(TestCase, LoadQuestionsMixin):
         answered_data = self.load_data(1, self.user)
         expected_data = ['me llamo', 'te llamas', 'estas listos', 'cuando', 'estoy enfadado', 'el supermercado',
                          'donde vives','Inglaterra', 'en Espana','yo vivo en estas puebla', ]
+        print(answered_data)
         self.assertEqual(answered_data,expected_data)
 
     def test_load_data2(self):

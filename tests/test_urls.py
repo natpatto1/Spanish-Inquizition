@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse, resolve
-from courses.views import CourseListView, UserCourses, LevelInfo, ScoreBoard
+from courses.views import CourseListView, UserCourses, LevelInfo, ScoreBoard, UserGuide
 from flashcard.views import FlashcardResult, FlashcardGame
 from django.contrib.auth import get_user_model
 from construct.views import ConstructGame, ConstructResult
@@ -14,31 +14,37 @@ class TestUrls(TestCase):
             password='secret'
         )
 
-    def test_home_page_url_is_resolved(self):
+    def test_home_page_url_resolves(self):
         self.client.login(username='testuser', password='secret')
         url = reverse('home')
         self.assertEqual(resolve(url).func.view_class, CourseListView)
 
-    def test_profile_page_url_is_resolved(self):
+    def test_profile_page_url_resolves(self):
         self.client.login(username='testuser', password='secret')
         url = reverse('profile')
         self.assertEqual(resolve(url).func.view_class, UserCourses)
 
-    def test_profile_month_page_url_is_resolved(self):
+    def test_profile_month_page_url_resolves(self):
         self.client.login(username='testuser', password='secret')
         url = reverse('profile_month', args=[2020,2])
         self.assertEqual(resolve(url).func.view_class, UserCourses)
 
 
-    def test_level_info_page_url_is_resolved(self):
+    def test_level_info_page_url_resolves(self):
         self.client.login(username='testuser', password='secret')
         url = reverse('level_info')
         self.assertEqual(resolve(url).func.view_class, LevelInfo)
 
-    def test_scoreboard_page_url_is_resolved(self):
+    def test_scoreboard_page_url_resolves(self):
         self.client.login(username='testuser', password='secret')
         url = reverse('scoreboard')
         self.assertEqual(resolve(url).func.view_class, ScoreBoard)
+
+    def test_guide_url_resolves(self):
+        self.client.login(username='testuser', password='secret')
+        url = reverse('instructions')
+        self.assertEqual(resolve(url).func.view_class, UserGuide )
+
 
 class TestFlashcardUrls(TestCase):
     def setUp(self):
