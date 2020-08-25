@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from courses.models import Levels, UserSessions, Spanish, PlayerStatus, PlayerScore
 from django.urls import reverse
-from flashcard.models import Answered
+from flashcard.models import Answered, Questions
 import json
 import datetime
 from courses.views import LoadQuestionsMixin, InitializeMixin
@@ -65,6 +65,26 @@ class TestViews(TestCase):
         self.playerscore = PlayerScore.objects.create(
             user = self.user,
             level = self.level,
+        )
+        self.answered = Answered.objects.create(
+            user=self.user,
+            spanish_id=self.spanish
+        )
+        self.answered2 = Answered.objects.create(
+            user=self.user,
+            spanish_id=self.spanish2
+        )
+        self.answered3 = Answered.objects.create(
+            user=self.user,
+            spanish_id=self.spanish3
+        )
+        self.answered4 = Answered.objects.create(
+            user=self.user,
+            spanish_id=self.spanish4
+        )
+        self.answered5 = Answered.objects.create(
+            user=self.user,
+            spanish_id=self.spanish5
         )
 
     def test_homepage_GET(self):
@@ -137,39 +157,8 @@ class TestViews(TestCase):
         user = PlayerStatus.objects.filter(user=self.user).first()
         self.assertEqual(user.current_level, 2)
 
-    def test_homepage_POST_question_data(self):
-        self.answered = Answered.objects.create(
-            user = self.user,
-            spanish_id = self.spanish
-        )
-        self.answered2 = Answered.objects.create(
-            user=self.user,
-            spanish_id=self.spanish2
-        )
-        self.answered3 = Answered.objects.create(
-            user=self.user,
-            spanish_id=self.spanish3
-        )
-        self.answered4 = Answered.objects.create(
-            user=self.user,
-            spanish_id=self.spanish4
-        )
-        self.answered5 = Answered.objects.create(
-            user=self.user,
-            spanish_id=self.spanish5
-        )
 
-        self.client.login(username='testuser', password='secret')
-        post_response = self.client.post('/', {'level_1.x': ['72'], 'level_1.y': ['79']})
-
-        self.data = self.client.session['data']
-        d = json.loads(self.data)
-
-        #There should be 5 questions
-        self.assertEqual(len(d), 5)
-
-
-    def test_profile_page_GET(self):
+    def test_activity_page_GET(self):
         self.client.login(username='testuser', password='secret')
         response = self.client.get(reverse('profile'))
 
@@ -177,7 +166,7 @@ class TestViews(TestCase):
         self.assertTemplateUsed(response, 'profile.html')
         self.assertTemplateUsed(response, 'base.html')
 
-    def test_profile_month_page_GET(self):
+    def test_activity_page_GET(self):
         self.client.login(username='testuser', password='secret')
         response = self.client.get(reverse('profile_month', args=[2020,2]))
 
@@ -204,6 +193,31 @@ class TestViews(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'level_info.html')
+    def test_level_info_load_data_GET(self):
+        s = self.client.session
+        s.update({
+            "results": ['test'],
+            'level_up': False})
+        s.save()
+
+        #Answered objects default for level is 1 if not provided.
+
+        self.client.login(username='testuser', password='secret')
+        response = self.client.get(reverse('level_info'))
+
+        #Make sure makes questions from answered data
+        question1 = Questions.objects.filter(spanish_id=self.answered.spanish_id).first()
+        self.assertEqual(str(question1.spanish_id), str(self.answered.spanish_id))
+        question_count = Questions.objects.all().count()
+        self.assertEqual(question_count, 5)
+
+        self.data = self.client.session['data']
+        d = json.loads(self.data)
+
+        # There should be 5 questions
+        self.assertEqual(len(d), 5)
+
+
 
     def test_user_guide_page_GET(self):
         self.client.login(username='testuser', password='secret')

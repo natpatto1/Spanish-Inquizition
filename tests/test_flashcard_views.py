@@ -69,6 +69,11 @@ class TestFlashcardViews(LoadQuestionsMixin, InitializeMixin, TestCase):
              Answered(user = self.user, spanish_id= self.spanish4, level_int =2),
              Answered(user = self.user, spanish_id= self.spanish5, level_int =2),])
 
+    def test_login_POST(self):
+        get_response = self.client.get('/users/login/')
+        post_response = self.client.post('/users/login/', {'username': 'testuser', 'password': 'secret'})
+        self.assertEqual(post_response.url, '/')
+        self.assertEqual(get_response.status_code, 200)
 
     def test_flashcard_page_GET(self):
         post_response = self.client.post('/users/login/', {'username': 'testuser', 'password': 'secret'})
@@ -78,6 +83,10 @@ class TestFlashcardViews(LoadQuestionsMixin, InitializeMixin, TestCase):
         self.assertTemplateUsed(response, 'flashcard.html')
         self.assertTemplateUsed(response, 'base.html')
 
+        data = self.client.session['data']
+        d = json.loads(data)
+        self.assertEqual(len(d), 5)
+
     def test_flashcard_page_POST_correct(self):
         post_response = self.client.post('/users/login/', {'username': 'testuser', 'password': 'secret'})
         response = self.client.get(reverse('flashcard'))
@@ -85,6 +94,7 @@ class TestFlashcardViews(LoadQuestionsMixin, InitializeMixin, TestCase):
         data = self.client.session['data']
         d = json.loads(data)
         self.assertEqual(len(d), 5)
+
 
         # Get question id for first item
         first = d[0]['fields']['spanish_id']
@@ -162,11 +172,7 @@ class TestFlashcardViews(LoadQuestionsMixin, InitializeMixin, TestCase):
 
 
 
-    def test_login_POST(self):
-        get_response = self.client.get('/users/login/')
-        post_response = self.client.post('/users/login/', {'username': 'testuser', 'password': 'secret'})
-        self.assertEqual(post_response.url, '/')
-        self.assertEqual(get_response.status_code, 200)
+
 
 
     def test_flashcard_result_GET(self):

@@ -78,6 +78,7 @@ class PlayerStatus(models.Model):
     currentQuestion = models.IntegerField(default=0)
     currentScore = models.IntegerField(default=0)
     currentErrors = models.IntegerField(default=0)
+    review_game = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Level-{self.current_level} | Question-{self.currentQuestion} | Score {self.currentScore}"

@@ -6,7 +6,9 @@
 
 
 {% block content %}
+
 <body class = 'home'>
+<meta http-equiv="refresh" content="5000">
 <input type="hidden" value="{{ level_up }}" id="level_up">
 <div class="modal fade" id="myModal" aria-hidden="true" role="dialog">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -38,14 +40,14 @@
         <th scope="col"></th>
     </tr>
   </thead>
-  <tbody>
+  <tbody><form>
   {% for object in table_words %}
   <tr>
 
       <th scope="row">{{ object.spanish_phrase }}</th>
       <td>{{ object.english_translation }}</td>
       <td>{{ object.review_in }} day(s)</td>
-      <td><a href="" class="say" name = "{{ object.spanish_phrase }}">listen</a>
+      <td><button type="submit" class="say btn btn-primary" name = "{{ object.spanish_phrase }}">listen</a>
           </td>
       <td>{% if object.information != '' %}
       <button class ="myBtn btn btn-primary" id="myBtn">i</button>
@@ -67,7 +69,7 @@
             </div></div>
 
 
-      {% endif %}</td>
+          {% endif %}</td></tr></form>
 
   </tr>
   {% endfor %}
@@ -95,7 +97,7 @@
                 <a href ="{% url 'construct' %}"><img src="{% static 'construct.png' %}"
                                       width=150"><figcaption style="text-align:center;">Construct Game</figcaption></a></div>
             <div class="d-flex p-2 bd-highlight justify-content-center">
-                <a href="{% url 'home' %}">Select a Different Topic</a></div>
+                <a href="{% url 'home' %}"><button class="btn btn-success">Select a Different Topic</button></a></div>
         </div>
     </div>
 
@@ -113,6 +115,7 @@
     const infoModal = document.getElementsByClassName("infoModal");
     const btn = document.getElementsByClassName("myBtn");
     function listen(value) {
+        window.stop();
         var text = value;
         var msg = new SpeechSynthesisUtterance(text);
         msg.lang = 'es-SP';
@@ -134,6 +137,7 @@
         $(".modal-backdrop").hide();}
 
     document.addEventListener("DOMContentLoaded", function() {
+
     for (let i = 0; i < words; i++) { //words is the total number of vocab item displayed
       options[i].addEventListener("click", function() {
         listen(options[i].name);
@@ -141,6 +145,7 @@
       }
     for (let i = 0; i < infos; i++) {
       btn[i].addEventListener("click", function() {
+        console.log('hello');
         info(i);
       });
       }

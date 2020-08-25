@@ -72,15 +72,15 @@ class FlashcardGame(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin,Upda
 
         initialized, created = PlayerStatus.objects.get_or_create(user=self.request.user)
         if initialized.current_level == 0:
-            level = self.initializeQuiz(request)
+            level = [self.initializeQuiz(request),]
             answered_data = self.load_data(level, self.request.user)
-            self.get_questions2(answered_data, level, request)
-            print('had not been intialized')
+            self.get_questions2(answered_data, request)
+        initialized.review_game = False
 
         if 'data' not in request.session:
-            level = self.initializeQuiz(request)
+            level = [self.initializeQuiz(request),]
             answered_data = self.load_data(level, self.request.user)
-            self.get_questions2(answered_data, level, request)
+            self.get_questions2(answered_data, request)
 
 
         data = request.session['data']
@@ -97,9 +97,9 @@ class FlashcardGame(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin,Upda
             n = int(question_num) % int(len(d))
             data = d[n]
         except:
-            level = self.initializeQuiz(request)
+            level = [self.initializeQuiz(request),]
             answered_data = self.load_data(level, self.request.user)
-            self.get_questions2(answered_data, level, request)
+            self.get_questions2(answered_data, request)
             data = request.session['data']
             d = json.loads(data)
             n = int(question_num) % int(len(d))
@@ -109,6 +109,8 @@ class FlashcardGame(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin,Upda
 
 
         #If the question is number 1 need to clear messages
+
+
 
 
         context = {'data': d,
@@ -122,6 +124,8 @@ class FlashcardGame(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin,Upda
                                data['fields']['distractor_three'],
                                data['fields']['distractor_four' ],],
                    'lives':3 - (status.currentErrors),
+
+
                    }
 
         return render(request, self.template_name, context)
@@ -132,16 +136,16 @@ class FlashcardGame(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin,Upda
     def post(self, request):
         question_id = int(request.POST['question-id'])
         answer = request.POST['answer']
-        print('answer',answer)
         answer = answer.strip()
 
         question_num = int(request.POST['question-num'])-1
         level = int(request.POST['level'])
 
-        if 'data' not in request.session:
-            level = self.initializeQuiz(request)
-            answered_data = self.load_data(level, self.request.user)
-            self.get_questions2(answered_data, level, request)
+        #if 'data' not in request.session:       #Do I need this here??????????????
+            #level = self.initializeQuiz(request)
+            #answered_data = self.load_data(level, self.request.user)
+            #self.get_questions2(answered_data, level, request)
+
         #Get JSON data for question number
         data = request.session['data']
         d = json.loads(data)
@@ -166,7 +170,7 @@ class FlashcardGame(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin,Upda
                                                            spanish_id =spanishObj,
                                                            level_int= spanishObj.level_number.level_number)
 
-        status, created = PlayerStatus.objects.get_or_create(user=self.request.user)
+        #status, created = PlayerStatus.objects.get_or_create(user=self.request.user)
         # If user didn't attempt then quality is 0
         if answer == "timeout":
             quality = 0
@@ -236,9 +240,11 @@ class FlashcardResult(LoginRequiredMixin, View):
     template_name = 'flashcard_result.html'
 
     def get(self,request):
+
         status, created = PlayerStatus.objects.get_or_create(user=self.request.user)
         game_score = int(status.currentScore)
-        print('game_score', game_score)
+
+
 
         #Add session to user session
         session, created = UserSessions.objects.get_or_create(user=self.request.user,
@@ -289,6 +295,7 @@ class FlashcardResult(LoginRequiredMixin, View):
             'score': game_score,
             'data': saved_results,
             'level_up': request.session['level_up'],
+            'review': status.review_game,
 
 
 

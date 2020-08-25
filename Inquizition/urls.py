@@ -17,6 +17,7 @@ urlpatterns = [
     path('courses/',include('courses.urls')),
     path('flashcard/', include('flashcard.urls')),
     path('construct/',include('construct.urls')),
+    path('review/',include('review.urls')),
     path('',CourseListView.as_view(),name='home'),
     path('flashcard', FlashcardGame.as_view(), name = 'flashcards'),
     path('profile/<int:year>/<int:month>/', UserCourses.as_view(), name = 'profile_month'),

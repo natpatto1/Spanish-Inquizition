@@ -70,7 +70,7 @@ class CompareMixin(object):
                         matrix[x - 1, y - 1] + 1,
                         matrix[x, y - 1] + 1
                     )
-        print(matrix)
+
         if (matrix[size_x - 1, size_y - 1]) == 0:
             return 5
         if (matrix[size_x - 1, size_y - 1]) == 1:  # one edit needed
@@ -92,18 +92,19 @@ class ConstructGame(LoginRequiredMixin, UpdateItemsMixin, LoadQuestionsMixin, In
         # For example if user has gone straigt to level info url without selecting a level previously
 
         initialized, created = PlayerStatus.objects.get_or_create(user=self.request.user)
+        initialized.review_game = False
 
         if initialized.current_level == 0:
-            level = self.initializeQuiz(request)
+            level = [self.initializeQuiz(request),]
             answered_data = self.load_data(level, self.request.user)
-            print('YESSSSS')
-            print('answered data', answered_data)
-            self.get_questions2(answered_data, level, request)
-            print('had not been intialized')
+
+
+            self.get_questions2(answered_data, request)
+
         if 'data' not in request.session:
-            level = self.initializeQuiz(request)
+            level = [self.initializeQuiz(request),]
             answered_data = self.load_data(level, self.request.user)
-            self.get_questions2(answered_data, level, request)
+            self.get_questions2(answered_data, request)
 
 
         data = request.session['data']
@@ -129,8 +130,7 @@ class ConstructGame(LoginRequiredMixin, UpdateItemsMixin, LoadQuestionsMixin, In
             'english_translation').first()
 
         spanish = data['fields']['spanish_id']
-        print('spanish', spanish)
-        print('construct distractor 1', data['fields']['construct_one'])
+
         #This makes a list of spanish split into elements in order to decide if it should be split by character of word
         spanishwords = spanish.split()
         #if len(spanishwords) > 2 and question_num % 3 != 1:
@@ -153,7 +153,7 @@ class ConstructGame(LoginRequiredMixin, UpdateItemsMixin, LoadQuestionsMixin, In
         else:
             characters = set(spanish)
             p = sample(characters, (len(characters)))
-            print('word length',len(p))
+
             sentence = False
 
 
@@ -169,6 +169,7 @@ class ConstructGame(LoginRequiredMixin, UpdateItemsMixin, LoadQuestionsMixin, In
             'sentence': sentence,
             'level': data['fields']['level'],
             'lives':lives,
+            'review': False
 
                    }
         return render(request, self.template_name, context)
@@ -176,17 +177,15 @@ class ConstructGame(LoginRequiredMixin, UpdateItemsMixin, LoadQuestionsMixin, In
 
 
     def post(self,request):
-        answer = request.POST['user_input']
-        #remove double spacing if exists
-
+        answer = request.POST['answer']
 
         # Need to check for extra spacing between words also
         answer = re.sub(' +', ' ', answer)
 
 
-        question_id = int(request.POST['question-id'])
+
         question_num = int(request.POST['question-num'])-1
-        sentence = request.POST.get('sentence',False)
+        sentence = request.POST.get('sentence',False)   #CONSTRUCT
         level = int(request.POST['level'])
 
         # Get JSON data for question number
@@ -224,6 +223,7 @@ class ConstructGame(LoginRequiredMixin, UpdateItemsMixin, LoadQuestionsMixin, In
         elif quality == 4:
             status.currentScore = int(status.currentScore) + 1
             status.save()
+            messages.error(request, "Almost there! Try again :(")
         else:
             status.currentErrors += 1
             status.save()
@@ -305,7 +305,7 @@ class ConstructResult(LoginRequiredMixin, View):
 
         # If points threshold is met for level user can level up
         level_detail = Levels.objects.filter(level_number=str(user.level)).first()
-        print('level detail', level_detail)
+
         if user.current_level_score >= level_detail.points_threshold:
             # level up
             # Get next level model

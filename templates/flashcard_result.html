@@ -30,7 +30,7 @@
           <div class ="score-circle"><b>+{{ score }}</b> points</div>
         </div>
         <div class="p-2 bd-highlight">
-      <a href ="{% url 'level_info' %}"><button class='btn btn-primary ml-2'>Back to Topic Menu</button></a>
+      <a href ="{% url 'level_info' %}" id="goBack"><button class='btn btn-primary ml-2' id="returnButton">Back to Topic Menu</button></a>
         </div>
         <div class="p-2 bd-highlight">
           <a href="{% url 'flashcard' %}"><button class="btn btn-primary ml-2">Play again &#8635</button></a>
@@ -42,6 +42,8 @@
   <br>
 <div class="row justify-content-around">
 
+<input type="hidden" id="review" value="{{ review }}">
+  <input type="hidden" id="Url" data-url="{% url 'home' %}">
 
 <table class="table table-hover">
   <thead class="thead-light">
@@ -76,6 +78,9 @@
 <script>
   var levelUp = document.getElementById('level_up').value;
   var span = document.getElementsByClassName("close")[0];
+  const review = document.getElementById('review').value;
+  const exit = document.getElementById('returnButton');
+  const goBack = document.getElementById('goBack');
 
   var audioElement = document.createElement("audio");
   audioElement.src = "https://dqktggxxlj4o5.cloudfront.net/static/levelup.mp3"
@@ -89,7 +94,15 @@
         $("#myModal").hide();
         $(".modal-backdrop").hide();
         };
-       console.log(levelUp)
+      exitLink();
+
   });
+
+  function exitLink(){
+        if(review == 'True'){
+            var url = $("#Url").attr("data-url");
+            console.log(url);
+            goBack.href = url;
+            exit.innerHTML = 'Back to Homepage';};}
 </script>
 {% endblock content %}

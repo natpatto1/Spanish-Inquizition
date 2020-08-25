@@ -15,7 +15,7 @@
         <h5 class="modal-title" id="exampleModalLabel">Gameover :(</h5>
       </div>
       <div class="modal-body"> Oh no, 3 strikes and Gameover!
-          <a href ="{% url 'level_info' %}">Go back to Topic page to play again.</a>
+          <a href ="{% url 'level_info' %}" id="gameover-link">Go back to Topic page to play again.</a>
       </div></div>
     </div>
 </div>
@@ -59,8 +59,10 @@
             <input type="hidden" id="word-length" value="{{ word_length }}">
             <input type="hidden" id="sentence" value="{{ sentence }}">
             <input type ="hidden" id="correct-answer" value="{{ spanish }}">
-            <input class="mx-auto d-block" type="text" id="user-input" name="user_input" value ="" style="width:500px">
+            <input class="mx-auto d-block" type="text" id="user-input" name="answer" value ="" style="width:500px">
             <input type="hidden" id="lives" value="{{ lives }}">
+            <input type="hidden" id="review" value="{{ review }}">
+            <input type="hidden" id="Url" data-url="{% url 'home' %}">
 
 
 
@@ -80,7 +82,7 @@
 
 
         <div class="text-center">
-<p><a href ="{% url 'level_info' %}" class="btn btn-primary">Exit</a></p>
+<p><a href ="{% url 'level_info' %}" class="btn btn-primary" id="exit">Exit</a></p>
 </div>
 
 
@@ -99,6 +101,9 @@
     var timerStop = 'False';
     const lives = document.getElementById('lives').value;
     const answer = document.getElementById('answer');
+    const review = document.getElementById('review').value;
+    const exit = document.getElementById('exit');
+    const gameoverLink = document.getElementById('gameover-link');
 
     var audioElement = document.createElement("audio");
     audioElement.src = "https://dqktggxxlj4o5.cloudfront.net/static/win.mp3"
@@ -182,10 +187,16 @@
       }
       gameover();
       liveImages();
+      exitLink();
 
 
     });
-
+    function exitLink(){
+        if(review == 'True'){
+            var url = $("#Url").attr("data-url");
+            exit.href = url;
+            gameoverLink.href = url;
+            gameoverLink.innerHTML = 'Go back to Homepage to play again.';};}
 
     submit.addEventListener("click",function(){
         var answer = document.getElementById('user-input').value;
