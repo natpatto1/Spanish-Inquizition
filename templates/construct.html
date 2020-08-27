@@ -206,7 +206,11 @@
         if (answer.toLowerCase() === correct_answer){
             response.innerHTML = 'Sucess!';
             response.style.color = '#32CD32';
-            audioElement.play()
+
+            var msg = new SpeechSynthesisUtterance(correct_answer);
+            msg.lang = 'es-SP';
+            window.speechSynthesis.speak(msg);
+            msg.onend = function() {audioElement.play()};
             }
         else {
             response.innerHTML = correct_answer
@@ -216,7 +220,7 @@
 
       stopTime();
       submit.disabled = true;
-      setTimeout(function(){question.submit()},1000);
+      setTimeout(function(){question.submit()},3000);
 
 
 

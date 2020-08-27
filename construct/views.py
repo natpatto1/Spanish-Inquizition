@@ -6,7 +6,7 @@ from django.views import View
 import json
 from courses.models import Spanish, PlayerScore, PlayerStatus, Levels, UserSessions
 from courses.views import InitializeMixin, LoadQuestionsMixin
-from flashcard.views import UpdateItemsMixin
+from flashcard.views import UpdateItemsMixin, Game
 from random import sample
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib import messages
@@ -16,6 +16,7 @@ from datetime import timedelta
 from django.utils import timezone
 import datetime
 import re
+
 from django.contrib.postgres.search import SearchVector
 from .models import Verbs
 from datetime import date
@@ -83,195 +84,258 @@ class CompareMixin(object):
             return 1
 
 
-class ConstructGame(LoginRequiredMixin, UpdateItemsMixin, LoadQuestionsMixin, InitializeMixin, CompareMixin, View):
+class ConstructGame(Game, CompareMixin):
     template_name = 'construct.html'
 
+    def make_option_buttons(self,request):
+        # This makes a list of spanish split into elements in order to decide if it should be split by character of word
+        self.spanishwords = self.spanish.split()
+        # if len(spanishwords) > 2 and question_num % 3 != 1:
+        if len(self.spanishwords) > 1:
+            if '?' in self.spanish:
+                self.spanishwords = self.spanish[1:-1].split()
+                self.spanishwords = self.spanishwords + ['?', '¿']
+            words = set(self.spanishwords)
+            # Get phrase distractors if exist
+            if self.data['fields']['construct_one'] != '':
+                words.add(self.data['fields']['construct_one'])
+                if self.data['fields']['construct_two'] != '':
+                    words.add(self.data['fields']['construct_two'])
+                    if words.add(self.data['fields']['construct_three']) != '':
+                        words.add(self.data['fields']['construct_one'])
+            self.p = sample(words, (len(words)))
+            self.sentence = True
+
+        # buttons for letters
+        else:
+            characters = set(self.spanish)
+            self.p = sample(characters, (len(characters)))
+
+            self.sentence = False
+
+
     def get(self, request):
+
+        self.get_quiz_data(request)
 
         # If session level hasn't been given a value this means the session hasn't been initialized
         # For example if user has gone straigt to level info url without selecting a level previously
 
-        initialized, created = PlayerStatus.objects.get_or_create(user=self.request.user)
-        initialized.review_game = False
+        # initialized, created = PlayerStatus.objects.get_or_create(user=self.request.user)
+        # initialized.review_game = False
+        #
+        # if initialized.current_level == 0:
+        #     level = [self.initializeQuiz(request),]
+        #     answered_data = self.load_data(level, self.request.user)
+        #
+        #
+        #     self.get_questions2(answered_data, request)
+        #
+        # if 'data' not in request.session:
+        #     level = [self.initializeQuiz(request),]
+        #     answered_data = self.load_data(level, self.request.user)
+        #     self.get_questions2(answered_data, request)
 
-        if initialized.current_level == 0:
-            level = [self.initializeQuiz(request),]
-            answered_data = self.load_data(level, self.request.user)
-
-
-            self.get_questions2(answered_data, request)
-
-        if 'data' not in request.session:
-            level = [self.initializeQuiz(request),]
-            answered_data = self.load_data(level, self.request.user)
-            self.get_questions2(answered_data, request)
-
-
-        data = request.session['data']
-        d = json.loads(data)
+        self.data = self.get_current_question(request)
+        # data = request.session['data']
+        # d = json.loads(data)
 
 
         # Get current question from user status
-        status = PlayerStatus.objects.filter(user=self.request.user).first()
-        question_num = int(status.currentQuestion)
-        lives = 3 - status.currentErrors
+        # status = PlayerStatus.objects.filter(user=self.request.user).first()
+        # question_num = int(status.currentQuestion)
+        # lives = 3 - self.status.currentErrors
 
         # remainder of (question number, total number of questions)-  Serve the (remainder)th question for the level
         # This is for when there are less than 10 questions
-        n = int(question_num) % int(len(d))
-        data = d[n]
+        # n = int(self.question_num) % int(len(d))
+        # data = d[n]
 
 
 
 
 
 
-        english = Spanish.objects.filter(spanish_phrase=data['fields']['spanish_id']).values(
-            'english_translation').first()
+        # english = Spanish.objects.filter(spanish_phrase=data['fields']['spanish_id']).values(
+        #     'english_translation').first()
 
-        spanish = data['fields']['spanish_id']
-
-        #This makes a list of spanish split into elements in order to decide if it should be split by character of word
-        spanishwords = spanish.split()
-        #if len(spanishwords) > 2 and question_num % 3 != 1:
-        if len(spanishwords) > 1:
-            if '?' in spanish:
-                spanishwords = spanish[1:-1].split()
-                spanishwords = spanishwords + ['?', '¿']
-            words = set(spanishwords)
-            # Get phrase distractors if exist
-            if data['fields']['construct_one'] != '':
-                words.add(data['fields']['construct_one'])
-                if data['fields']['construct_two'] != '':
-                    words.add(data['fields']['construct_two'])
-                    if words.add(data['fields']['construct_three']) != '':
-                        words.add(data['fields']['construct_one'])
-            p = sample(words, (len(words)))
-            sentence = True
-
-        # buttons for letters
-        else:
-            characters = set(spanish)
-            p = sample(characters, (len(characters)))
-
-            sentence = False
+        # spanish = self.data['fields']['spanish_id']
+        self.make_option_buttons(request)
+        # #This makes a list of spanish split into elements in order to decide if it should be split by character of word
+        # spanishwords = self.spanish.split()
+        # #if len(spanishwords) > 2 and question_num % 3 != 1:
+        # if len(spanishwords) > 1:
+        #     if '?' in self.spanish:
+        #         spanishwords = self.spanish[1:-1].split()
+        #         spanishwords = spanishwords + ['?', '¿']
+        #     words = set(spanishwords)
+        #     # Get phrase distractors if exist
+        #     if self.data['fields']['construct_one'] != '':
+        #         words.add(self.data['fields']['construct_one'])
+        #         if self.data['fields']['construct_two'] != '':
+        #             words.add(self.data['fields']['construct_two'])
+        #             if words.add(self.data['fields']['construct_three']) != '':
+        #                 words.add(self.data['fields']['construct_one'])
+        #     p = sample(words, (len(words)))
+        #     sentence = True
+        #
+        # # buttons for letters
+        # else:
+        #     characters = set(self.spanish)
+        #     p = sample(characters, (len(characters)))
+        #
+        #     sentence = False
 
 
 
         context = {
-            'question': english['english_translation'],
-            'spanish': spanish,
-            'spanish_words': spanishwords,
-            'characters': p,
-            'question_num': question_num + 1,
-            'number':data['pk'],
-            'word_length': len(p),
-            'sentence': sentence,
-            'level': data['fields']['level'],
-            'lives':lives,
+            'question': self.english['english_translation'],
+            'spanish': self.spanish,
+            'spanish_words': self.spanishwords,
+            'characters': self.p,
+            'question_num': self.question_num + 1,
+            'number':self.data['pk'],
+            'word_length': len(self.p),
+            'sentence': self.sentence,
+            'level': self.data['fields']['level'],
+            'lives': 3 - self.status.currentErrors,
             'review': False
 
                    }
         return render(request, self.template_name, context)
 
+    def format_answer_and_target_before_comparing(self, request):
 
+        self.correct_answer2 = self.correct_answer
+        self.correct_answer2 = self.correct_answer2.replace(u"\u00A0", " ")
+        # Remove punctuation from correct answer if missing from answer
+        if self.correct_answer.startswith('¿') or self.correct_answer.startswith('¡'):
+            if not self.answer.startswith('¿') or self.answer.startswith('¡'):
+                self.correct_answer2 = self.correct_answer[1:-1]
 
-    def post(self,request):
-        answer = request.POST['answer']
+        self.answer = self.answer.lower()
+        self.correct_answer2 = self.correct_answer2.lower()
 
-        # Need to check for extra spacing between words also
-        answer = re.sub(' +', ' ', answer)
-
-
-
-        question_num = int(request.POST['question-num'])-1
-        sentence = request.POST.get('sentence',False)   #CONSTRUCT
-        level = int(request.POST['level'])
-
-        # Get JSON data for question number
-        data = request.session['data']
-        d = json.loads(data)
-
-        # remainder of (question number, total number of questions)-  Serve the (remainder)th question for the level
-        # This is for when there are less than 10 questions
-        n = int(question_num) % int(len(d))
-        data = d[n]
-
-        # Get correct answer from JSON data
-        correct_answer = data['fields']['correct_answer']
-
-        status, created = PlayerStatus.objects.get_or_create(user=self.request.user)
-        status.currentQuestion = int(question_num + 1)
-        status.save()
-
-        correct_answer2 = correct_answer
-        #Remove punctuation from correct answer if missing from answer
-        if correct_answer.startswith('¿' or '¡'):
-            if not answer.startswith('¿' or '¡'):
-                correct_answer2 = correct_answer[1:-1]
-
-
-        answer = answer.lower()
-        correct_answer2 = correct_answer2.lower()
-        quality = self.findQuality(answer, correct_answer, sentence)
-
-        if correct_answer2 == answer:
+    def check_answer(self, request, quality):
+        print(self.answer, 'answer')
+        print(self.correct_answer2, 'correct')
+        if self.correct_answer2 == self.answer:
             status, created = PlayerStatus.objects.get_or_create(user=self.request.user)
             status.currentScore = int(status.currentScore) + 2
             status.save()
             messages.success(request, "Yohoo! Correct answer, keep up the streak :)")
         elif quality == 4:
-            status.currentScore = int(status.currentScore) + 1
-            status.save()
+            self.status.currentScore = int(self.status.currentScore) + 1
+            self.status.save()
             messages.error(request, "Almost there! Try again :(")
         else:
-            status.currentErrors += 1
-            status.save()
+            self.status.currentErrors += 1
+            self.status.save()
             messages.error(request, "Bummer! Wrong answer, try again :(")
 
 
+    def post(self,request):
+        # answer = request.POST['answer']
+        #
+        # # Need to check for extra spacing between words also
+        # answer = re.sub(' +', ' ', answer)
+        # answer = answer.replace(u"\u00A0", " ")
+        # answer = re.sub('&nbsp;', ' ', answer)
+        self.get_and_format_POST_data(request)
 
 
+        #question_num = int(request.POST['question-num'])-1
+        # sentence = request.POST.get('sentence',False)   #CONSTRUCT
+        # level = int(request.POST['level'])
 
-        #Save quality of answer in results session data
-        saved_results = request.session['results']
-        if correct_answer not in saved_results:
-            saved_results[correct_answer] = (quality,)
-        else:
-            results = saved_results[correct_answer]
-            results.append(quality)
-            saved_results[correct_answer] = results
-        request.session['results'] = saved_results
+        # Get JSON data for question number
+        # data = request.session['data']
+        # d = json.loads(data)
+        #
+        # # remainder of (question number, total number of questions)-  Serve the (remainder)th question for the level
+        # # This is for when there are less than 10 questions
+        # n = int(question_num) % int(len(d))
+        # data = d[n]
+        #
+        # # Get correct answer from JSON data
+        # correct_answer = data['fields']['correct_answer']
+        self.correct_answer = self.get_POST_correct_answer(request)
 
-        #update Answered model with quality response
-        spanishObj = Spanish.objects.get(spanish_phrase=correct_answer)
-        answered, created = Answered.objects.get_or_create(user=self.request.user,
-                                                           spanish_id=spanishObj,
-                                                           level_int = spanishObj.level_number.level_number)
-        # Firstly update the repetition number for the phrase for the user and the quality
-        answered.quality_value = quality
+        # status, created = PlayerStatus.objects.get_or_create(user=self.request.user)
+        # status.currentQuestion = int(self.question_num + 1)
+        # status.save()
 
-
-        result = self.updateInterval(answered.ef, answered.repetition, quality)
-        answered.ef = result[0]
-        answered.repetition = result[1]
-
-        review = self.setReview(answered.repetition)
-        answered.review_time = review
-        answered.quality_value = quality
-        answered.last_review_day = timezone.now().date()
-        answered.save()
-
-
-
-        if status.currentErrors >= 3:
-            system_messages = messages.get_messages(request)
-            for message in system_messages:
-                pass
-            system_messages.used = True
+        self.POST_increment_current_question(request)
+        self.format_answer_and_target_before_comparing(request)
+        # correct_answer2 = self.correct_answer
+        # correct_answer2 = correct_answer2.replace(u"\u00A0", " ")
+        # #Remove punctuation from correct answer if missing from answer
+        # if self.correct_answer.startswith('¿') or self.correct_answer.startswith('¡'):
+        #     if not self.answer.startswith('¿') or self.answer.startswith('¡'):
+        #         correct_answer2 = self.correct_answer[1:-1]
 
 
-        if status.currentQuestion == 10:
+        # self.answer = self.answer.lower()
+        # correct_answer2 = self.correct_answer2.lower()
+        self.quality = self.findQuality(self.answer, self.correct_answer2, self.sentence)
+
+        self.check_answer(request,self.quality)
+        # if self.correct_answer2 == self.answer:
+        #     status, created = PlayerStatus.objects.get_or_create(user=self.request.user)
+        #     status.currentScore = int(status.currentScore) + 2
+        #     status.save()
+        #     messages.success(request, "Yohoo! Correct answer, keep up the streak :)")
+        # elif quality == 4:
+        #     self.status.currentScore = int(self.status.currentScore) + 1
+        #     self.status.save()
+        #     messages.error(request, "Almost there! Try again :(")
+        # else:
+        #     self.status.currentErrors += 1
+        #     self.status.save()
+        #     messages.error(request, "Bummer! Wrong answer, try again :(")
+
+        self.answered = self.POST_update_Answered_data(request)
+        self.POST_save_to_results(request)
+
+        # #Save quality of answer in results session data
+        # saved_results = request.session['results']
+        # if correct_answer not in saved_results:
+        #     saved_results[correct_answer] = (quality,)
+        # else:
+        #     results = saved_results[correct_answer]
+        #     results.append(quality)
+        #     saved_results[correct_answer] = results
+        # request.session['results'] = saved_results
+
+        # #update Answered model with quality response
+        # spanishObj = Spanish.objects.get(spanish_phrase=correct_answer)
+        # answered, created = Answered.objects.get_or_create(user=self.request.user,
+        #                                                    spanish_id=spanishObj,
+        #                                                    level_int = spanishObj.level_number.level_number)
+        # # Firstly update the repetition number for the phrase for the user and the quality
+        # answered.quality_value = quality
+        #
+        #
+        # result = self.updateInterval(answered.ef, answered.repetition, quality)
+        # answered.ef = result[0]
+        # answered.repetition = result[1]
+        #
+        # review = self.setReview(answered.repetition)
+        # answered.review_time = review
+        # answered.quality_value = quality
+        # answered.last_review_day = timezone.now().date()
+        # answered.save()
+
+
+        self.POST_check_end_game_conditions(request)
+        # if self.status.currentErrors >= 3:
+        #     system_messages = messages.get_messages(request)
+        #     for message in system_messages:
+        #         pass
+        #     system_messages.used = True
+
+
+        if self.status.currentQuestion == 10:
             system_messages = messages.get_messages(request)
             for message in system_messages:
                 pass

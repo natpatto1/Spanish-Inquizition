@@ -93,7 +93,7 @@ class LoadTest(TestCase, LoadQuestionsMixin):
 
 
     def test_load_data(self):
-        answered_data = self.load_data(1, self.user)
+        answered_data = self.load_data([1,], self.user)
         expected_data = ['me llamo', 'te llamas', 'estas listos', 'cuando', 'estoy enfadado', 'el supermercado',
                          'donde vives','Inglaterra', 'en Espana','yo vivo en estas puebla', ]
         print(answered_data)
@@ -108,7 +108,7 @@ class LoadTest(TestCase, LoadQuestionsMixin):
         self.answered9.last_review_day = timezone.now() - timezone.timedelta(hours=24)
         self.answered9.save()
         #self.answered 9 shouldn't move and be ranked last
-        answered_data = self.load_data(1, self.user)
+        answered_data = self.load_data([1,], self.user)
         expected_data = ['me llamo', 'te llamas', 'estas listos', 'cuando', 'estoy enfadado', 'el supermercado', 'yo vivo en estas puebla',
                          'donde vives', 'Inglaterra', 'en Espana', ]
         self.assertEqual(answered_data, expected_data)
@@ -117,7 +117,7 @@ class LoadTest(TestCase, LoadQuestionsMixin):
         #Reduce answered.10 review time so that it is ranked first
         self.answered10.review_time = timezone.now() + timezone.timedelta(hours=10)
         self.answered10.save()
-        answered_data = self.load_data(1, self.user)
+        answered_data = self.load_data([1,], self.user)
         expected_data = ['me llamo', 'te llamas', 'estas listos', 'cuando', 'estoy enfadado', 'el supermercado',
                          'yo vivo en estas puebla',
                          'donde vives','Inglaterra', 'en Espana', ]
@@ -127,17 +127,17 @@ class LoadTest(TestCase, LoadQuestionsMixin):
         #self.answered1 rep will be changed to 1 but as review time is automatically set to today, it will be due
         self.answered1.repetition = 1
         self.answered1.save()
-        answered_data = self.load_data(1, self.user)
+        answered_data = self.load_data([1,], self.user)
         expected_data = ['te llamas', 'me llamo', 'estas listos', 'cuando', 'estoy enfadado', 'el supermercado',
                          'donde vives', 'Inglaterra', 'en Espana', 'yo vivo en estas puebla', ]
         self.assertEqual(answered_data, expected_data)
 
     def test_overdue(self):
         self.answered10.review_time = timezone.now() - timezone.timedelta(hours=24)
-        #answered10 should be ranked as overdue
+        #answered10 should be ranked as overdue and prioritized first (just after first two that are on zero rep).
         self.answered10.save()
-        answered_data = self.load_data(1, self.user)
-        expected_data = ['me llamo', 'te llamas', 'estas listos', 'cuando', 'yo vivo en estas puebla', 'estoy enfadado', 'el supermercado',
+        answered_data = self.load_data([1,], self.user)
+        expected_data = ['me llamo', 'te llamas','yo vivo en estas puebla', 'estas listos', 'cuando', 'estoy enfadado', 'el supermercado',
                          'donde vives', 'Inglaterra', 'en Espana',]
         self.assertEqual(answered_data, expected_data)
 

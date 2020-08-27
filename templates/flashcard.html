@@ -71,7 +71,7 @@
       </form>
     <div>
           {% for option in options %}
-          <button class = "btn btn-outline-success option-btn my-2 mx-auto d-block" style="width: 400">
+          <button class = "btn btn-outline-success option-btn my-2 mx-auto d-block" style="width: 400;">
           {{ option }}</button>
           {% endfor %}
         </div>
@@ -172,6 +172,7 @@ for (let i = 0; i < 4; i++){
     timerStop = 'True'
     stopTime();
     answer.value = (options[i].innerHTML).trimLeft();
+
     if (answer.value == correct){
 
         var msg = new SpeechSynthesisUtterance(answer.value);
@@ -181,7 +182,13 @@ for (let i = 0; i < 4; i++){
     else {
         audioElementLose.play();
         stopTime();
-        setTimeout(function(){question.submit()},1500);};
+        for (let i = 0; i < 4; i++){
+            option = (options[i].innerHTML).trimLeft();
+            if(option == correct){
+                options[i].className = 'btn btn-outline-warning option-btn my-2 mx-auto d-block';
+                };
+                };
+        setTimeout(function(){question.submit()},1000)};
     for (let i = 0; i < 4; i++){
         options[i].disabled = true};
 

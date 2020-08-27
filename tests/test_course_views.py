@@ -119,6 +119,11 @@ class TestViews(TestCase):
 
         self.assertEqual(str(self.playerscore.level), str(self.level2))
 
+    def test_homepage_GET_strength_context(self):
+        self.client.login(username='testuser', password='secret')
+        response = self.client.get(reverse('home'))
+        self.assertEqual(response.context['strength'], {1:'weak',})
+
 
     def test_homepage_POST(self):
         self.client.login(username='testuser', password='secret')

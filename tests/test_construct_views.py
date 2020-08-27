@@ -103,7 +103,7 @@ class ConstructTestView(TestCase, LoadQuestionsMixin, InitializeMixin):
         post_response_construct = self.client.post('/construct/construct/', {'question-id': [question_num],
                                                                              'question-num': ['1'],
                                                                              'level': ['1'],
-                                                                             'user_input': [first]})
+                                                                             'answer': [first]})
 
         self.assertEqual(post_response_construct.status_code, 302)
         self.assertEqual(post_response_construct.url, '/construct/construct/')
@@ -144,10 +144,11 @@ class ConstructTestView(TestCase, LoadQuestionsMixin, InitializeMixin):
         question_num = Questions.objects.filter(correct_answer=str(first)).first()
         question_num = question_num.id
 
+
         post_response_construct = self.client.post('/construct/construct/', {'question-id': [question_num],
                                                                              'question-num': ['1'],
                                                                              'level': ['1'],
-                                                                             'user_input': [str(first+'s')]})
+                                                                             'answer': [str(first+'s')]})
 
 
         self.assertEqual(post_response_construct.status_code, 302)
@@ -174,7 +175,7 @@ class ConstructTestView(TestCase, LoadQuestionsMixin, InitializeMixin):
         post_response_flashcard = self.client.post('/construct/construct/', {'question-id': ['1'],
                                                                              'question-num': ['1'],
                                                                              'level': ['1'],
-                                                                             'user_input': ['']})
+                                                                             'answer': ['']})
 
         spanish = Spanish.objects.filter(spanish_phrase=str(first)).first()
         answered = Answered.objects.filter(spanish_id=spanish).first()
@@ -190,7 +191,7 @@ class ConstructTestView(TestCase, LoadQuestionsMixin, InitializeMixin):
         post_response_construct = self.client.post('/construct/construct/', {'question-id': ['1'],
                                                                              'question-num': ['10'],
                                                                              'level': ['1'],
-                                                                             'user_input': ['test']})
+                                                                             'answer': ['test']})
 
         self.assertEqual(post_response_construct.status_code, 302)
         self.assertEqual(post_response_construct.url, '/construct/construct_result/')

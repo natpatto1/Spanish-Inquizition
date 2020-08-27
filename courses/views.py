@@ -247,6 +247,7 @@ class LoadQuestionsMixin(object):
 
 class InitializeMixin(object):
 
+
     def initializeQuiz(self, request):
         playerScore = PlayerScore.objects.filter(user=self.request.user).first()
         maxLevel = 1
@@ -267,90 +268,52 @@ class InitializeMixin(object):
         current.save()
         return maxLevel
 
-
-
-def streak(session_object, user, streak_length):
-    date = session_object.session
-    yesterday = date - timedelta(days=1)
-    result = UserSessions.objects.filter(user=user,
-                                             session=str(yesterday)).all()
-
-    if len(result) == 0:
-            return streak_length
-    else:
-        streak_length += 1
-        return streak(result[0], user, streak_length)
-
 class CourseListView(LoginRequiredMixin, LoadQuestionsMixin, View):
     template_name = 'home.html'
     login_url = 'login'
 
+    def streak(self, session_object, streak_length):
+        date = session_object.session
+        yesterday = date - timedelta(days=1)
+        result = UserSessions.objects.filter(user=self.user,
+                                             session=str(yesterday)).all()
 
-    def get(self, request):
-        user = self.request.user
+        if len(result) == 0:
+            return streak_length
+        else:
+            streak_length += 1
+            return self.streak(result[0], streak_length)
 
-        # Reset current data - in case have gone straight from game
-        initialized, created = PlayerStatus.objects.get_or_create(user=self.request.user)
-        initialized.currentQuestion = 0
-        initialized.currentScore = 0
-        initialized.currentErrors = 0
-        initialized.save()
-
-        request.session['level_up'] = False
-
-
-
-        level_and_score = PlayerScore.objects.filter(user=user).first()
-        if level_and_score is None:
-            levelOne = Levels.objects.get(level_number=1)
-            level_and_score, created = PlayerScore.objects.get_or_create(user=user, level=levelOne)
-            level_and_score.save()
-        level = str(level_and_score.level)
-        score = level_and_score.current_level_score
-        total_score = level_and_score.score
-
-
-        level_threshold = Levels.objects.filter(level_number=str(level)).first()
-        level_points_threshold = level_threshold.points_threshold
-        points_needed = int(level_points_threshold) - int(score)
-
-        # Update user level if score is more than current level threshold
-        if score >= level_points_threshold:
-            level = str(int(level) + 1)
-            level_up = Levels.objects.filter(level_number=level).first()
-            level_and_score.level = level_up
-            level_and_score.save()
-            level_points_threshold = level_up.points_threshold
-
-        # Find streak length
-        streak_length = 1
+    def find_streak_length(self):
+        streak_length = 0
         try:
-            latest_session = UserSessions.objects.filter(user= user).latest('session')
-            first_time = False
-            self.current_streak = streak(latest_session, self.request.user, streak_length)
+            latest_session = UserSessions.objects.filter(user=self.user).latest('session')
+            self.first_time = False
+            streak_length = 1
+            self.current_streak = self.streak(latest_session, streak_length)
         except:
-            first_time = True
-            self.current_streak = 0
-
+            self.first_time = True
+            self.current_streak = streak_length
 
         # Update user score for longest session
 
-        #status, created = PlayerScore.objects.get_or_create(user=self.request.user)
-        if level_and_score.day_streak < self.current_streak:
-            level_and_score.day_streak = self.current_streak
-            level_and_score.save()
+        # status, created = PlayerScore.objects.get_or_create(user=self.request.user)
+        if self.level_and_score.day_streak < self.current_streak:
+            self.level_and_score.day_streak = self.current_streak
+            self.level_and_score.save()
 
-        # Find strength for each level/topic
+    def strength(self, level):
         now = timezone.now()
         strength = dict()
+
         for num in range(1, int(level) + 1):
-            answered = Answered.objects.filter(user=self.request.user,
-                                               level_int=num, ).values('spanish_id','review_time')
+            answered = Answered.objects.filter(user=self.user,
+                                               level_int=num, ).values('spanish_id', 'review_time')
 
             today = 0
             two_weeks = 0
             two_weeks_plus = 0
-            print(now < now+timedelta(days=14))
+
             for item in answered:
 
                 # If item needs to be reviewed in the next day
@@ -371,49 +334,93 @@ class CourseListView(LoginRequiredMixin, LoadQuestionsMixin, View):
             else:
                 strength[num] = 'weak'
 
+        return strength
+
+    def create_player_score_data(self):
+        self.level_and_score = PlayerScore.objects.filter(user=self.user).first()
+        if self.level_and_score is None:
+            levelOne = Levels.objects.get(level_number=1)
+            self.level_and_score, created = PlayerScore.objects.get_or_create(user=self.user, level=levelOne)
+            self.level_and_score.save()
+
+        self.level = str(self.level_and_score.level)
+        self.score = self.level_and_score.current_level_score
+        self.total_score = self.level_and_score.score
+
+    def check_level_up(self):
+        self.level_threshold = Levels.objects.filter(level_number=str(self.level)).first()
+        self.level_points_threshold = self.level_threshold.points_threshold
+        self.points_needed = int(self.level_points_threshold) - int(self.score)
+
+        # Update user level if score is more than current level threshold
+        if self.score >= self.level_points_threshold:
+            self.level = str(int(self.level) + 1)
+            level_up = Levels.objects.filter(level_number=self.level).first()
+            self.level_and_score.level = level_up
+            self.level_and_score.save()
+            self.level_points_threshold = level_up.points_threshold
+
+    def reset_status_data(self,request):
+        # Reset current data - in case have gone straight from game
+        initialized, created = PlayerStatus.objects.get_or_create(user=self.user)
+        initialized.currentQuestion = 0
+        initialized.currentScore = 0
+        initialized.currentErrors = 0
+        initialized.save()
+
+        request.session['level_up'] = False
+
+    def get(self, request):
+        self.user = self.request.user
+
+        self.reset_status_data(request)
+
+        self.create_player_score_data()
+
+        self.check_level_up()
+
+        self.find_streak_length()
+
+        self.topic_strength = self.strength(self.level)
+
         context = {
-            'user': user,
-            'level': level,
-            'total_score': total_score,
-            'level_threshold': level_points_threshold,
-            'points': points_needed,
-            'strength': strength,
-            'level_description': level_threshold.description,
-            'first_time': first_time,
+            'user': self.user,
+            'level': self.level,
+            'total_score': self.total_score,
+            'level_threshold': self.level_points_threshold,
+            'points': self.points_needed,
+            'strength': self.topic_strength,
+            'level_description': self.level_threshold.description,
+            'first_time': self.first_time,
         }
 
         return render(request, self.template_name, context)
 
+    def save_current_level(self, level, user):
+        current, created = PlayerStatus.objects.get_or_create(user=user)
+        level_and_score = PlayerScore.objects.filter(user=user).first()
+
+        if level_and_score.level.level_number < level:
+            return redirect('/')
+
+        current.current_level = level
+        current.save()
+
     def post(self, request):
-        current, created = PlayerStatus.objects.get_or_create(user=self.request.user)
-        level_and_score = PlayerScore.objects.filter(user=request.user).first()
         if 'level_1.x' in request.POST:
-            current.current_level = 1
-            current.save()
+            self.save_current_level(1, self.request.user)
             return redirect('courses/level_info/')
         if 'level_2.x' in request.POST:
-            if level_and_score.level.level_number < 2:
-                return redirect('/')
-            current.current_level = 2
-            current.save()
+            self.save_current_level(2, self.request.user)
             return redirect('courses/level_info/')
         if 'level_3.x' in request.POST:
-            if level_and_score.level.level_number < 3:
-                return redirect('/')
-            current.current_level = 3
-            current.save()
+            self.save_current_level(3, self.request.user)
             return redirect('courses/level_info/')
         if 'level_4.x' in request.POST:
-            if level_and_score.level.level_number < 4:
-                return redirect('/')
-            current.current_level = 4
-            current.save()
+            self.save_current_level(4, self.request.user)
             return redirect('courses/level_info/')
         if 'level_5.x' in request.POST:
-            if level_and_score.level.level_number < 5:
-                return redirect('/')
-            current.current_level = 5
-            current.save()
+            self.save_current_level(5, self.request.user)
             return redirect('courses/level_info/')
         else:
             return HttpResponse(request.POST)
@@ -424,8 +431,6 @@ class SessionCalendar(LoginRequiredMixin, HTMLCalendar):
     def __init__(self, sessions):
         super(SessionCalendar, self).__init__()
         self.sessions = self.group_by_day(sessions)
-
-
 
     def formatday(self, day, weekday):
 
@@ -450,7 +455,6 @@ class SessionCalendar(LoginRequiredMixin, HTMLCalendar):
     def group_by_day(self, psessions):
         field = lambda session: session.session.day
 
-
         return dict(
             [(day, list(items)) for day, items in groupby(psessions, field)]
         )
@@ -458,14 +462,26 @@ class SessionCalendar(LoginRequiredMixin, HTMLCalendar):
     def day_cell(self, cssclass, body):
         return '<td class="%s">%s</td>' % (cssclass, body)
 
-
-
 class UserCourses(LoginRequiredMixin, View):
     template_name = 'profile.html'
+
+    def streak(self, session_object, streak_length):
+        date = session_object.session
+        yesterday = date - timedelta(days=1)
+        result = UserSessions.objects.filter(user=self.user,
+                                             session=str(yesterday)).all()
+
+        if len(result) == 0:
+            return streak_length
+        else:
+            streak_length += 1
+            return self.streak(result[0], streak_length)
 
     def get(self, request, **kwargs):
         all_sessions = UserSessions.objects.filter(user=self.request.user)
         session_arr = []
+
+        self.user = self.request.user
 
 
         try:
@@ -496,9 +512,10 @@ class UserCourses(LoginRequiredMixin, View):
 
         date = str(timezone.now().date())
         latest_session = UserSessions.objects.filter(session = date).first()
-        streak_length = 1
+        streak_length = 0
         if latest_session:
-            current_streak = streak(latest_session, self.request.user, streak_length)
+            streak_length = 1
+            current_streak = self.streak(latest_session, streak_length)
 
         else:
             current_streak = 0
@@ -508,8 +525,6 @@ class UserCourses(LoginRequiredMixin, View):
         context = {
             'course_list': PlayerScore.objects.filter(user=self.request.user),
             'user': self.request.user,
-            #'all_sessions': all_sessions,
-            #'dates': json.dumps(session_arr),
             'Calendar': mark_safe(Calendar),
             'Month': month,
             'MonthName': calendar.month_name[month],
@@ -525,138 +540,136 @@ class UserCourses(LoginRequiredMixin, View):
             'current_streak': current_streak,
             'longest_streak': longest_streak,
 
-
         }
         return render(request, self.template_name, context)
 
-
 class LevelInfo(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin, View):
-    # Need to change how quiz questions are selected, this is called everytime this page is loaded based on answered
-    # Need to create question table based on questions selected. Distractors need to be updated each time.
 
     template_name = 'level_info.html'
     login_url = 'login'
 
-    def get(self, request):
-        # If session level hasn't been given a value this means the session hasn't been initialized
-        # For example if user has gone straigt to level info url without selecting a level previously
-        initialized, created = PlayerStatus.objects.get_or_create(user=self.request.user)
-        initialized.currentQuestion = 0
-        initialized.currentScore = 0
-        initialized.currentErrors = 0
-        initialized.save()
+    def reset_status_data(self):
+    # If session level hasn't been given a value this means the session hasn't been initialized
+        # For example if user has gone straightt to level info url without selecting a level previously
 
+        self.initialized, created = PlayerStatus.objects.get_or_create(user=self.user)
+        self.initialized.currentQuestion = 0
+        self.initialized.currentScore = 0
+        self.initialized.currentErrors = 0
+        self.initialized.save()
 
-        try:
-            request.session['level_up']
-        except:
-            request.session['level_up'] = False
+    def get_quiz_data(self, request):
 
-        if initialized.current_level != 0:
-            current_level = [int(initialized.current_level),]
-            answered_data = self.load_data(current_level, self.request.user)
+        if self.initialized.current_level != 0:
+            current_level = [int(self.initialized.current_level),]
+            answered_data = self.load_data(current_level, self.user)
             questions = self.get_questions2(answered_data, request)
 
-        if initialized.current_level == 0:
+        if self.initialized.current_level == 0:
             level = [self.initializeQuiz(request),]
-            answered_data = self.load_data(level, self.request.user)
+            answered_data = self.load_data(level, self.user)
             self.get_questions2(answered_data, request)
 
+    def check_if_user_quit_game_early(self, request):
         # if results is not empty it means that user has already started playing round and questions need to be reset to empty
         result = request.session['results']
         if len(result) != 0:
             # results is not empty - reset
             results = dict()
             request.session['results'] = results
-            level = [initialized.current_level,]
-            answered_data = self.load_data(level, self.request.user)
+            level = [self.initialized.current_level, ]
+            answered_data = self.load_data(level, self.user)
             self.get_questions2(answered_data, request)
 
-        level = PlayerStatus.objects.filter(user=self.request.user).first()
-        current_level = int(level.current_level)
-        spanish_list = Spanish.objects.filter(level_number=current_level)
-        level_desc = Levels.objects.filter(level_number=current_level).first()
-        level_desc = level_desc.description
+    def get_display_level_information(self):
+        self.level = PlayerStatus.objects.filter(user=self.user).first()
+        self.current_level = int(self.level.current_level)
+        self.spanish_list = Spanish.objects.filter(level_number=self.current_level)
+        level_desc = Levels.objects.filter(level_number=self.current_level).first()
+        self.level_desc = level_desc.description
 
+    def create_answered_data(self):
         # Need to create answered objects if not already existing for user and level
-        for item in spanish_list:
+        for item in self.spanish_list:
             spanish = Spanish.objects.get(spanish_phrase=item)
-            answered, created = Answered.objects.get_or_create(user=self.request.user,
+            answered, created = Answered.objects.get_or_create(user=self.user,
                                                                spanish_id=spanish,
                                                                level_int=spanish.level_number.level_number)
             answered.save()
 
+    def get_spanish_review_times_and_information_index(self):
         # Get review time for each item
         # Count number of items with additional information also (i)
-        i = 0
-        ready_to_review = list()
-        #answeredstuff = Answered.objects.filter(parent__in=spanish_list)
+        self.i = 0
+        self.ready_to_review = list()
 
-        #answeredstuff = Answered.objects.all().select_related("user")
         today = timezone.now()
-        answeredstuff = Answered.objects.filter(spanish_id__level_number__level_number=current_level)
-        answeredstuff = answeredstuff.filter(user=self.request.user)
+        answeredstuff = Answered.objects.filter(spanish_id__level_number__level_number=self.current_level)
+        answeredstuff = answeredstuff.filter(user=self.user)
         for item in answeredstuff:
-                spanish = spanish_list.filter(spanish_phrase = item.spanish_id).first()
+            spanish = self.spanish_list.filter(spanish_phrase=item.spanish_id).first()
 
-                review = item.review_time
+            review = item.review_time
 
-                due = review - today
+            due = review - today
 
-                due = due.days
+            due = due.days
 
-                ls = (item.spanish_id, due)
-                ready_to_review.append(ls)
+            ls = (item.spanish_id, due)
+            self.ready_to_review.append(ls)
 
-                if str(spanish.information) != '':
-                    i =i +1
+            if str(spanish.information) != '':
+                self.i = self.i + 1
 
+    def convert_level_data_to_dictionary(self):
+        # convert queryset to dictionary
 
-        #
-        # for item in spanish_list:
-        #     spanish = Spanish.objects.get(spanish_phrase=item)
-        #     answer = Answered.objects.filter(user=self.request.user,
-        #                                      spanish_id=spanish).first()
-        #     review = answer.review_time
-        #     today = timezone.now()
-        #     due = review - today
-        #     due = due.days
-        #     ls = (spanish.spanish_phrase, due)
-        #     ready_to_review.append(ls)
-        #     if str(spanish.information) != '':
-        #         i =i +1
-
-
-
-
-
-        #convert queryset to dictionary
-
-        table_words= [{'spanish_phrase': obj.spanish_phrase,
-                       'english_translation': obj.english_translation,
-                       'information': obj.information} for obj in spanish_list]
+        table_words = [{'spanish_phrase': obj.spanish_phrase,
+                             'english_translation': obj.english_translation,
+                             'information': obj.information} for obj in self.spanish_list]
 
         for item in table_words:
-            for obj in ready_to_review:
+            for obj in self.ready_to_review:
                 if str(item['spanish_phrase']) == str(obj[0]):
                     item['review_in'] = obj[1]
+        return table_words
+
+    def get(self, request):
+        self.user = self.request.user
+
+        self.reset_status_data()
+
+        try:
+            request.session['level_up']
+        except:
+            request.session['level_up'] = False
+
+        self.get_quiz_data(request)
+
+        self.check_if_user_quit_game_early(request)
+
+        self.get_display_level_information()
+
+        self.create_answered_data()
+
+        self.get_spanish_review_times_and_information_index()
+
+        self.table_words = self.convert_level_data_to_dictionary()
 
         spanish_data = request.session['data']
 
         context = {
-            'level': current_level,
-            'level_now': level,
+            'level': self.current_level,
+            'level_now': self.level,
             'session_data': spanish_data,
-            'description': level_desc,
-            'NumWords': len(spanish_list),
+            'description': self.level_desc,
+            'NumWords': len(self.spanish_list),
             'level_up': request.session['level_up'],
-            'ready_to_review': ready_to_review,
-            'table_words': table_words,
-            'NumInfo': i,
+            'ready_to_review': self.ready_to_review,
+            'table_words': self.table_words,
+            'NumInfo': self.i,
         }
-
         return render(request, self.template_name, context)
-
 
 class ScoreBoard(LoginRequiredMixin,View):
     template_name = 'scoreboard.html'
@@ -687,8 +700,6 @@ class UserGuide(View):
 
 
     def get(self, request):
-
-
 
         context = {}
 
