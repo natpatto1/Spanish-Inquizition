@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from courses.views import UserCourses, CourseListView
-from flashcard.views import FlashcardGame
+from flashcard.views import FlashcardGame, Result
 from django.views.generic.base import TemplateView
 from construct.views import ConstructGame
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
@@ -21,6 +21,7 @@ urlpatterns = [
     path('',CourseListView.as_view(),name='home'),
     path('flashcard', FlashcardGame.as_view(), name = 'flashcards'),
     path('profile/<int:year>/<int:month>/', UserCourses.as_view(), name = 'profile_month'),
+    path('result/', Result.as_view(), name = 'result'),
 
 
 

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import FlashcardGame, FlashcardResult
+from .views import FlashcardGame, Result
 
 
 
@@ -7,8 +7,8 @@ from .views import FlashcardGame, FlashcardResult
 
 urlpatterns = [
     #path('index/', IndexView.as_view(), name = 'index'),
-    path('flashcard/', FlashcardGame.as_view(), name='flashcard'),
-    path('flashcard_result/',FlashcardResult.as_view(), name = 'flashcard_result'),
+    path('flashcard/', FlashcardGame.as_view(), name='flashcard')
+    #path('result/',Result.as_view(), name = 'result'),
 
 ]
 

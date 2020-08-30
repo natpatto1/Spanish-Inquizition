@@ -398,29 +398,38 @@ class CourseListView(LoginRequiredMixin, LoadQuestionsMixin, View):
 
     def save_current_level(self, level, user):
         current, created = PlayerStatus.objects.get_or_create(user=user)
-        level_and_score = PlayerScore.objects.filter(user=user).first()
-
-        if level_and_score.level.level_number < level:
-            return redirect('/')
+        self.level_and_score = PlayerScore.objects.filter(user=user).first()
 
         current.current_level = level
         current.save()
 
+
+
     def post(self, request):
         if 'level_1.x' in request.POST:
             self.save_current_level(1, self.request.user)
+            if self.level_and_score.level.level_number < 1:
+                return redirect('/')
             return redirect('courses/level_info/')
         if 'level_2.x' in request.POST:
             self.save_current_level(2, self.request.user)
+            if self.level_and_score.level.level_number < 2:
+                return redirect('/')
             return redirect('courses/level_info/')
         if 'level_3.x' in request.POST:
             self.save_current_level(3, self.request.user)
+            if self.level_and_score.level.level_number < 3:
+                return redirect('/')
             return redirect('courses/level_info/')
         if 'level_4.x' in request.POST:
             self.save_current_level(4, self.request.user)
+            if self.level_and_score.level.level_number < 4:
+                return redirect('/')
             return redirect('courses/level_info/')
         if 'level_5.x' in request.POST:
             self.save_current_level(5, self.request.user)
+            if self.level_and_score.level.level_number < 5:
+                return redirect('/')
             return redirect('courses/level_info/')
         else:
             return HttpResponse(request.POST)

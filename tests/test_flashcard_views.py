@@ -139,7 +139,7 @@ class TestFlashcardViews(LoadQuestionsMixin, InitializeMixin, TestCase):
         post_response_flashcard = self.client.post('/flashcard/flashcard/', {'question-id': [question_num],
                                                                              'question-num': ['1'],
                                                                              'level': ['2'],
-                                                                             'answer': ['test']})
+                                                                             'answer': ['wrong']})
         self.assertEqual(post_response_flashcard.status_code, 302)
         self.assertEqual(post_response_flashcard.url, '/flashcard/flashcard/')
 
@@ -182,9 +182,9 @@ class TestFlashcardViews(LoadQuestionsMixin, InitializeMixin, TestCase):
             'level_up': False})
         s.save()
         self.client.login(username='testuser', password='secret')
-        response = self.client.get('/flashcard/flashcard_result/')
+        response = self.client.get('/result/')
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'flashcard_result.html')
+        self.assertTemplateUsed(response, 'result.html')
         self.assertTemplateUsed(response, 'base.html')
 
 

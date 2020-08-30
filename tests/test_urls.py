@@ -1,9 +1,10 @@
 from django.test import TestCase
 from django.urls import reverse, resolve
 from courses.views import CourseListView, UserCourses, LevelInfo, ScoreBoard, UserGuide
-from flashcard.views import FlashcardResult, FlashcardGame
+from flashcard.views import Result, FlashcardGame
 from django.contrib.auth import get_user_model
-from construct.views import ConstructGame, ConstructResult
+from construct.views import ConstructGame
+from review.views import ReviewGame
 
 
 class TestUrls(TestCase):
@@ -61,8 +62,8 @@ class TestFlashcardUrls(TestCase):
 
     def test_flashcard_result_page_url_is_resolved(self):
         self.client.login(username='testuser', password='secret')
-        url = reverse('flashcard_result')
-        self.assertEqual(resolve(url).func.view_class, FlashcardResult)
+        url = reverse('result')
+        self.assertEqual(resolve(url).func.view_class, Result)
 
 
 class TestConstructUrls(TestCase):
@@ -78,7 +79,15 @@ class TestConstructUrls(TestCase):
         url = reverse('construct')
         self.assertEqual(resolve(url).func.view_class, ConstructGame)
 
-    def test_construct_result_page_url_is_resolved(self):
+
+class TestReviewUrls(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username='testuser',
+            email='test@email.com',
+            password='secret'
+        )
+    def test_construct_page_url_is_resolved(self):
         self.client.login(username='testuser', password='secret')
-        url = reverse('construct_result')
-        self.assertEqual(resolve(url).func.view_class, ConstructResult)
+        url = reverse('review')
+        self.assertEqual(resolve(url).func.view_class, ReviewGame)

@@ -1,8 +1,11 @@
 {% extends 'base.html' %}
 
+{% load staticfiles %}
 
+
+{% block title %}Flashcard Game{% endblock title %}
 {% block content %}
-<BODY class="flashcard">
+<body  class = 'flashcard'>
 <input type="hidden" value="{{ level_up }}" id="level_up">
 <div class="modal fade" id="myModal" aria-hidden="true" role="dialog">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -19,7 +22,6 @@
     </div>
 </div>
 
-
 <div class="container">
   <div class="row justify-content-around">
     <div class="col-10" style="height:150px; padding:5px; bottom-margin: 10px;">
@@ -28,10 +30,10 @@
           <div class ="score-circle"><b>+{{ score }}</b> points</div>
         </div>
         <div class="p-2 bd-highlight">
-      <a href ="{% url 'level_info' %}"><button class='btn btn-primary ml-2'>Back to Topic Menu</button></a>
+      <a href ="{% url 'level_info' %}" id="goBack"><button class='btn btn-primary ml-2' id="returnButton">Back to Topic Menu</button></a>
         </div>
         <div class="p-2 bd-highlight">
-          <a href="{% url 'construct' %}"><button class="btn btn-primary ml-2">Play again &#8635</button></a>
+          <a href="{% url 'flashcard' %}"  id="playAgain"><button class="btn btn-primary ml-2">Play again &#8635</button></a>
         </div>
       </div>
 
@@ -39,6 +41,12 @@
   </div>
   <br>
 <div class="row justify-content-around">
+
+<input type="hidden" id="review" value="{{ review }}">
+  <input type="hidden" id="Url" data-url="{% url 'home' %}">
+  <input type="hidden" id="review-url" data-url = "{% url 'review' %}">
+  <input type="hidden" id="game" value="{{ game }}">
+  <input type="hidden" id="con-url" data-url="{% url 'construct' %}">
 
 <table class="table table-hover">
   <thead class="thead-light">
@@ -60,30 +68,55 @@
   </tr>
   {% endfor %}
   {% endfor %}
-
-
   </tbody>
 </table>
 </div>
+
+
+
+
+
+
 </div>
-</BODY>
 <script>
+  var levelUp = document.getElementById('level_up').value;
+  var span = document.getElementsByClassName("close")[0];
+  const review = document.getElementById('review').value;
+  const exit = document.getElementById('returnButton');
+  const goBack = document.getElementById('goBack');
+  const playAgain = document.getElementById('playAgain');
+  const game= document.getElementById('game').value;
+
   var audioElement = document.createElement("audio");
   audioElement.src = "https://dqktggxxlj4o5.cloudfront.net/static/levelup.mp3"
 
-  var levelUp = document.getElementById('level_up').value;
-  var span = document.getElementsByClassName("close")[0];
-
   document.addEventListener("DOMContentLoaded", function() {
       if (levelUp == 'True'){
-      $("#myModal").modal('show')
-      audioElement.play();};
+      $("#myModal").modal('show');
+      audioElement.play()};
 
       span.onclick = function() {
         $("#myModal").hide();
         $(".modal-backdrop").hide();
         };
-       console.log(levelUp)
+      exitLink();
+      gameLinks();
+
   });
+
+  function gameLinks(){
+    if (game == 'construct'){
+      var url = $("#con-url").attr("data-url");
+      console.log(url);
+      playAgain.href = url;};
+      }
+
+  function exitLink(){
+        if(review == 'True'){
+            var url = $("#Url").attr("data-url");
+            var playurl = $("#review-url").attr("data-url");
+            playAgain.href = playurl;
+            goBack.href = url;
+            exit.innerHTML = 'Back to Homepage';};}
 </script>
 {% endblock content %}

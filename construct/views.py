@@ -116,7 +116,7 @@ class ConstructGame(Game, CompareMixin):
 
     def get(self, request):
 
-        self.get_quiz_data(request)
+        self.get_quiz_data(request, 'construct')
 
         # If session level hasn't been given a value this means the session hasn't been initialized
         # For example if user has gone straigt to level info url without selecting a level previously
@@ -341,7 +341,7 @@ class ConstructGame(Game, CompareMixin):
                 pass
             system_messages.used = True
             request.session['initialized'] = False
-            return redirect('/construct/construct_result/')
+            return redirect('result')
 
 
         return redirect('construct')
@@ -349,58 +349,58 @@ class ConstructGame(Game, CompareMixin):
 
 
 
-class ConstructResult(LoginRequiredMixin, View):
-    template_name = 'construct_result.html'
-
-    def get(self,request):
-        status, created = PlayerStatus.objects.get_or_create(user=self.request.user)
-        game_score = int(status.currentScore)
-
-        # Add session to user session
-        session, created = UserSessions.objects.get_or_create(user=self.request.user,
-                                                              session=datetime.datetime.now().date())
-
-        user = PlayerScore.objects.get(user=self.request.user)
-        user.score = int(user.score) + game_score
-
-        # Add game points to current level points only if the game was played in the user's top level
-        if int(status.current_level) == int(user.level.level_number):
-            user.current_level_score = user.current_level_score + game_score
-
-        # If points threshold is met for level user can level up
-        level_detail = Levels.objects.filter(level_number=str(user.level)).first()
-
-        if user.current_level_score >= level_detail.points_threshold:
-            # level up
-            # Get next level model
-            levelUp = str(user.level.level_number + 1)
-            levelUp_detail = Levels.objects.get(level_number=levelUp)
-            user.level = levelUp_detail
-            user.current_level_score = 0
-            request.session['level_up'] = True
-
-        # get data results
-
-        saved_results = request.session['results']
-
-
-        # Reset current user details to 0
-        status.currentQuestion = 0
-        status.current_level = 0
-        status.currentScore = 0
-        status.currentErrors = 0
-        status.save()
-        user.save()
-        request.session['data'] = ""
-
-        context = {
-            'score': game_score,
-            'data': saved_results,
-            'level_up': request.session['level_up'],
-
-
-            }
-
-        return render(request, self.template_name, context)
-
-
+# class ConstructResult(LoginRequiredMixin, View):
+#     template_name = 'construct_result.html'
+#
+#     def get(self,request):
+#         status, created = PlayerStatus.objects.get_or_create(user=self.request.user)
+#         game_score = int(status.currentScore)
+#
+#         # Add session to user session
+#         session, created = UserSessions.objects.get_or_create(user=self.request.user,
+#                                                               session=datetime.datetime.now().date())
+#
+#         user = PlayerScore.objects.get(user=self.request.user)
+#         user.score = int(user.score) + game_score
+#
+#         # Add game points to current level points only if the game was played in the user's top level
+#         if int(status.current_level) == int(user.level.level_number):
+#             user.current_level_score = user.current_level_score + game_score
+#
+#         # If points threshold is met for level user can level up
+#         level_detail = Levels.objects.filter(level_number=str(user.level)).first()
+#
+#         if user.current_level_score >= level_detail.points_threshold:
+#             # level up
+#             # Get next level model
+#             levelUp = str(user.level.level_number + 1)
+#             levelUp_detail = Levels.objects.get(level_number=levelUp)
+#             user.level = levelUp_detail
+#             user.current_level_score = 0
+#             request.session['level_up'] = True
+#
+#         # get data results
+#
+#         saved_results = request.session['results']
+#
+#
+#         # Reset current user details to 0
+#         status.currentQuestion = 0
+#         status.current_level = 0
+#         status.currentScore = 0
+#         status.currentErrors = 0
+#         status.save()
+#         user.save()
+#         request.session['data'] = ""
+#
+#         context = {
+#             'score': game_score,
+#             'data': saved_results,
+#             'level_up': request.session['level_up'],
+#
+#
+#             }
+#
+#         return render(request, self.template_name, context)
+#
+#

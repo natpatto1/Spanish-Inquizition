@@ -194,7 +194,7 @@ class ConstructTestView(TestCase, LoadQuestionsMixin, InitializeMixin):
                                                                              'answer': ['test']})
 
         self.assertEqual(post_response_construct.status_code, 302)
-        self.assertEqual(post_response_construct.url, '/construct/construct_result/')
+        self.assertEqual(post_response_construct.url, '/result/')
 
     def test_construct_result_GET(self):
         s = self.client.session
@@ -203,9 +203,9 @@ class ConstructTestView(TestCase, LoadQuestionsMixin, InitializeMixin):
             'level_up': False})
         s.save()
         self.client.login(username='testuser', password='secret')
-        response = self.client.get('/construct/construct_result/')
+        response = self.client.get('/result/')
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'construct_result.html')
+        self.assertTemplateUsed(response, 'result.html')
         self.assertTemplateUsed(response, 'base.html')
 
 
