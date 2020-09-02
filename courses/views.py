@@ -399,10 +399,12 @@ class CourseListView(LoginRequiredMixin, LoadQuestionsMixin, View):
 
         if len(answered_data) != len(spanish_data):
             for item in spanish_data:
-                result = Answered.objects.filter(spanish_id = item).first()
-                if not result:
+                result = Answered.objects.filter(user = self.user,
+                                                 spanish_id = item).count()
+                
+                if result == 0:
                     spanish_list_to_add.append(item)
-
+        print('NEED to make', spanish_list_to_add)
 
         self.create_answered_data(spanish_list_to_add)
 
