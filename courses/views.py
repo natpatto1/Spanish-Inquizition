@@ -119,8 +119,6 @@ class LoadQuestionsMixin(object):
             distract = self.load_distractors2(item)
             construct_distractors = self.load_construct_distractors(item)
 
-
-
             distract.append(item.spanish_phrase)
             random.shuffle(distract)
 
@@ -152,20 +150,20 @@ class LoadQuestionsMixin(object):
         request.session['results'] = results
 
     def load_data(self, level, user):
-        data = Answered.objects.filter(user=user,
-                                       level_int__in =level,
-                                       repetition=0).values('spanish_id').all()
-
+        self.data = Answered.objects.filter(user=user,
+                                       level_int__in =level).all()
+        #zero_rep = self.data.filter(repetition=0).values('spanish_id').all()
         # Need to turn this into a list of only spanish_id
         datals = list()
-        for item in data:
-            datals.append(item['spanish_id'])
+        for item in self.data:
+            if item.repetition == 0:
+                datals.append(item.spanish_id)
         # If there are atleast 10 on repetition 0
 
         if len(datals) >= 10:
             datals = datals[:10]
         else:
-            get = 10 - (len(data))
+            get = 10 - (len(datals))
             due = self.due_load(get, level, datals, user)
 
             datals = datals + due
@@ -183,13 +181,13 @@ class LoadQuestionsMixin(object):
 
     def ranked_load(self, num, level, data_ls, user):
         now = timezone.now()
-        check = Answered.objects.filter(user=user,
-                                        level_int__in=level, ).values('spanish_id', 'review_time')
+        # check = Answered.objects.filter(user=user,
+        #                                 level_int__in=level, ).values('spanish_id', 'review_time')
         # calculate differnece between now and review time and store in list
         rankings = dict()
-        for item in check:
-            time = item['review_time']
-            spanish = item['spanish_id']
+        for item in self.data:
+            time = item.review_time
+            spanish = item.spanish_id
             # Check that phrase has not already been added based on repetition
             if spanish not in data_ls:
                 try:
@@ -213,13 +211,14 @@ class LoadQuestionsMixin(object):
         # Checks for items that have been reviewed today with a quality result of less than 4
         returned = list()
         today = timezone.now().date()
-        check = Answered.objects.filter(user=user,
-                                        level_int__in=level,
-                                        last_review_day=today).values('spanish_id', 'quality_value')
-        for item in check:
-            if item['spanish_id'] not in data_ls:
-                if int(item['quality_value']) < 4:
-                    returned.append(item['spanish_id'])
+        # check = Answered.objects.filter(user=user,
+        #                                 level_int__in=level,
+        #                                 last_review_day=today).values('spanish_id', 'quality_value')
+        for item in self.data:
+            if item.last_review_day == today:
+                if item.spanish_id not in data_ls:
+                    if int(item.quality_value) < 4:
+                        returned.append(item.spanish_id)
 
         return returned[:num]
 
@@ -228,14 +227,14 @@ class LoadQuestionsMixin(object):
         rankings = dict()
         returned = list()
         today = timezone.now()
-        check = Answered.objects.filter(user=user,
-                                        level_int__in=level, ).values('spanish_id', 'review_time')
+        # check = Answered.objects.filter(user=user,
+        #                                 level_int__in=level, ).values('spanish_id', 'review_time')
 
-        for item in check:
-            if item['spanish_id'] not in data_ls:   #‘data_ls’ is items already added because they are 0 repetition.
-                if item['review_time'] <= today:
-                    returned.append(item['spanish_id'])
-                    rankings[item['spanish_id']] = item['review_time']
+        for item in self.data:
+            if item.spanish_id not in data_ls:   #‘data_ls’ is items already added because they are 0 repetition.
+                if item.review_time <= today:
+                    returned.append(item.spanish_id)
+                    rankings[item.spanish_id] = item.review_time
 
         rank = sorted(rankings.items(), key=lambda x: x[1])
         rank[:num]
@@ -271,6 +270,16 @@ class InitializeMixin(object):
 class CourseListView(LoginRequiredMixin, LoadQuestionsMixin, View):
     template_name = 'home.html'
     login_url = 'login'
+
+    def create_answered_data(self, spanish_list):
+        # Need to create answered objects if not already existing for user and level
+        for item in spanish_list:
+
+            answered, created = Answered.objects.get_or_create(user=self.user,
+                                                               spanish_id=item,
+                                                               level_int=item.level_number.level_number)
+            answered.save()
+
 
     def streak(self, session_object, streak_length):
         date = session_object.session
@@ -338,7 +347,7 @@ class CourseListView(LoginRequiredMixin, LoadQuestionsMixin, View):
 
     def create_player_score_data(self):
         self.level_and_score = PlayerScore.objects.filter(user=self.user).first()
-        if self.level_and_score is None:
+        if not self.level_and_score:
             levelOne = Levels.objects.get(level_number=1)
             self.level_and_score, created = PlayerScore.objects.get_or_create(user=self.user, level=levelOne)
             self.level_and_score.save()
@@ -348,27 +357,27 @@ class CourseListView(LoginRequiredMixin, LoadQuestionsMixin, View):
         self.total_score = self.level_and_score.score
 
     def check_level_up(self):
-        self.level_threshold = Levels.objects.filter(level_number=str(self.level)).first()
+        self.level_threshold = Levels.objects.filter(level_number=self.level).first()
         self.level_points_threshold = self.level_threshold.points_threshold
         self.points_needed = int(self.level_points_threshold) - int(self.score)
 
         # Update user level if score is more than current level threshold
         if self.score >= self.level_points_threshold:
             self.level = str(int(self.level) + 1)
-            level_up = Levels.objects.filter(level_number=self.level).first()
+            level_up = Levels.objects.filter(level_number=str(self.level)).first()
             self.level_and_score.level = level_up
             self.level_and_score.save()
             self.level_points_threshold = level_up.points_threshold
 
     def reset_status_data(self,request):
-        # Reset current data - in case have gone straight from game
-        initialized, created = PlayerStatus.objects.get_or_create(user=self.user)
-        initialized.currentQuestion = 0
-        initialized.currentScore = 0
-        initialized.currentErrors = 0
-        initialized.save()
+        self.initialized, created = PlayerStatus.objects.get_or_create(user=self.user)
+        self.initialized.currentQuestion = 0
+        self.initialized.currentScore = 0
+        self.initialized.currentErrors = 0
+        self.initialized.save()
 
         request.session['level_up'] = False
+
 
     def get(self, request):
         self.user = self.request.user
@@ -377,15 +386,33 @@ class CourseListView(LoginRequiredMixin, LoadQuestionsMixin, View):
 
         self.create_player_score_data()
 
+
         self.check_level_up()
+
+        # Need to create answered data if doesn't exist
+        #List of all user levels
+        levels = list(range(1, int(self.level_and_score.level.level_number)+1))
+
+        spanish_list_to_add = list()
+        answered_data = Answered.objects.filter(user=self.user, level_int__in = levels)
+        spanish_data = Spanish.objects.filter(level_number__in= levels)
+
+        if len(answered_data) != len(spanish_data):
+            for item in spanish_data:
+                result = Answered.objects.filter(spanish_id = item).first()
+                if not result:
+                    spanish_list_to_add.append(item)
+
+
+        self.create_answered_data(spanish_list_to_add)
 
         self.find_streak_length()
 
-        self.topic_strength = self.strength(self.level)
+        self.topic_strength = self.strength(str(self.level_and_score.level))
 
         context = {
             'user': self.user,
-            'level': self.level,
+            'level': str(self.level_and_score.level),
             'total_score': self.total_score,
             'level_threshold': self.level_points_threshold,
             'points': self.points_needed,
@@ -478,9 +505,9 @@ class UserCourses(LoginRequiredMixin, View):
         date = session_object.session
         yesterday = date - timedelta(days=1)
         result = UserSessions.objects.filter(user=self.user,
-                                             session=str(yesterday)).all()
+                                             session=str(yesterday)).count()
 
-        if len(result) == 0:
+        if result == 0:
             return streak_length
         else:
             streak_length += 1
@@ -560,12 +587,12 @@ class LevelInfo(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin, View):
     def reset_status_data(self):
     # If session level hasn't been given a value this means the session hasn't been initialized
         # For example if user has gone straightt to level info url without selecting a level previously
-
         self.initialized, created = PlayerStatus.objects.get_or_create(user=self.user)
         self.initialized.currentQuestion = 0
         self.initialized.currentScore = 0
         self.initialized.currentErrors = 0
         self.initialized.save()
+
 
     def get_quiz_data(self, request):
 
@@ -593,18 +620,12 @@ class LevelInfo(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin, View):
     def get_display_level_information(self):
         self.level = PlayerStatus.objects.filter(user=self.user).first()
         self.current_level = int(self.level.current_level)
-        self.spanish_list = Spanish.objects.filter(level_number=self.current_level)
+        #self.spanish_list = Spanish.objects.filter(level_number=self.current_level)
+        self.spanish_list = Spanish.objects.select_related('level_number').filter(level_number = self.current_level)
+        #self.spanish_list = self.spanish_list.filter(level_number = self.current_level)
         level_desc = Levels.objects.filter(level_number=self.current_level).first()
         self.level_desc = level_desc.description
 
-    def create_answered_data(self):
-        # Need to create answered objects if not already existing for user and level
-        for item in self.spanish_list:
-            spanish = Spanish.objects.get(spanish_phrase=item)
-            answered, created = Answered.objects.get_or_create(user=self.user,
-                                                               spanish_id=spanish,
-                                                               level_int=spanish.level_number.level_number)
-            answered.save()
 
     def get_spanish_review_times_and_information_index(self):
         # Get review time for each item
@@ -613,8 +634,10 @@ class LevelInfo(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin, View):
         self.ready_to_review = list()
 
         today = timezone.now()
-        answeredstuff = Answered.objects.filter(spanish_id__level_number__level_number=self.current_level)
-        answeredstuff = answeredstuff.filter(user=self.user)
+        answeredstuff = Answered.objects.filter(spanish_id__level_number__level_number=self.current_level,
+                                                user = self.user)
+        #answeredstuff = answeredstuff.filter(user=self.user)
+        #answeredstuff = Answered.objects.select_related('level_number')
         for item in answeredstuff:
             spanish = self.spanish_list.filter(spanish_phrase=item.spanish_id).first()
 
@@ -658,8 +681,6 @@ class LevelInfo(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin, View):
         self.check_if_user_quit_game_early(request)
 
         self.get_display_level_information()
-
-        self.create_answered_data()
 
         self.get_spanish_review_times_and_information_index()
 

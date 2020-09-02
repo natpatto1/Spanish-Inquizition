@@ -109,7 +109,7 @@ class TestViews(TestCase):
 
 
     def test_homepage_GET_level_up(self):
-        self.playerscore.current_level_score = 500
+        self.playerscore.current_level_score = 501
         self.playerscore.save()
 
         self.client.login(username='testuser', password='secret')

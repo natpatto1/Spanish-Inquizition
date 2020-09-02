@@ -37,9 +37,12 @@ class ReviewGame(ConstructGame, FlashcardGame):
         self.status.save()
 
 
+
+
     def get(self,request):
         #Level isn't based on current level - list of all levels up to user max level
         self.template_name = 'flashcard.html'
+
 
 
         self.get_quiz_data(request)

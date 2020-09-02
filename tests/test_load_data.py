@@ -94,8 +94,11 @@ class LoadTest(TestCase, LoadQuestionsMixin):
 
     def test_load_data(self):
         answered_data = self.load_data([1,], self.user)
-        expected_data = ['me llamo', 'te llamas', 'estas listos', 'cuando', 'estoy enfadado', 'el supermercado',
-                         'donde vives','Inglaterra', 'en Espana','yo vivo en estas puebla', ]
+        expected_data = [self.answered1.spanish_id, self.answered2.spanish_id,
+                         self.answered3.spanish_id, self.answered4.spanish_id,
+                         self.answered5.spanish_id, self.answered6.spanish_id,
+                         self.answered7.spanish_id, self.answered8.spanish_id,
+                         self.answered9.spanish_id, self.answered10.spanish_id, ]
         print(answered_data)
         self.assertEqual(answered_data,expected_data)
 
@@ -109,8 +112,11 @@ class LoadTest(TestCase, LoadQuestionsMixin):
         self.answered9.save()
         #self.answered 9 shouldn't move and be ranked last
         answered_data = self.load_data([1,], self.user)
-        expected_data = ['me llamo', 'te llamas', 'estas listos', 'cuando', 'estoy enfadado', 'el supermercado', 'yo vivo en estas puebla',
-                         'donde vives', 'Inglaterra', 'en Espana', ]
+        expected_data = [self.answered1.spanish_id, self.answered2.spanish_id,
+                         self.answered3.spanish_id, self.answered4.spanish_id,
+                         self.answered5.spanish_id, self.answered6.spanish_id,
+                         self.answered10.spanish_id, self.answered7.spanish_id,
+                         self.answered8.spanish_id, self.answered9.spanish_id, ]
         self.assertEqual(answered_data, expected_data)
 
     def test_load_data3(self):
@@ -118,9 +124,11 @@ class LoadTest(TestCase, LoadQuestionsMixin):
         self.answered10.review_time = timezone.now() + timezone.timedelta(hours=10)
         self.answered10.save()
         answered_data = self.load_data([1,], self.user)
-        expected_data = ['me llamo', 'te llamas', 'estas listos', 'cuando', 'estoy enfadado', 'el supermercado',
-                         'yo vivo en estas puebla',
-                         'donde vives','Inglaterra', 'en Espana', ]
+        expected_data = [self.answered1.spanish_id, self.answered2.spanish_id,
+                         self.answered3.spanish_id, self.answered4.spanish_id,
+                         self.answered5.spanish_id, self.answered6.spanish_id,
+                         self.answered10.spanish_id, self.answered7.spanish_id,
+                         self.answered8.spanish_id, self.answered9.spanish_id,]
         self.assertEqual(answered_data, expected_data)
 
     def test_load_data4(self):
@@ -128,8 +136,11 @@ class LoadTest(TestCase, LoadQuestionsMixin):
         self.answered1.repetition = 1
         self.answered1.save()
         answered_data = self.load_data([1,], self.user)
-        expected_data = ['te llamas', 'me llamo', 'estas listos', 'cuando', 'estoy enfadado', 'el supermercado',
-                         'donde vives', 'Inglaterra', 'en Espana', 'yo vivo en estas puebla', ]
+        expected_data = [self.answered2.spanish_id, self.answered1.spanish_id,
+                         self.answered3.spanish_id, self.answered4.spanish_id,
+                         self.answered5.spanish_id, self.answered6.spanish_id,
+                         self.answered7.spanish_id, self.answered8.spanish_id,
+                         self.answered9.spanish_id, self.answered10.spanish_id, ]
         self.assertEqual(answered_data, expected_data)
 
     def test_overdue(self):
@@ -137,8 +148,11 @@ class LoadTest(TestCase, LoadQuestionsMixin):
         #answered10 should be ranked as overdue and prioritized first (just after first two that are on zero rep).
         self.answered10.save()
         answered_data = self.load_data([1,], self.user)
-        expected_data = ['me llamo', 'te llamas','yo vivo en estas puebla', 'estas listos', 'cuando', 'estoy enfadado', 'el supermercado',
-                         'donde vives', 'Inglaterra', 'en Espana',]
+        expected_data = [self.answered1.spanish_id, self.answered2.spanish_id,
+                         self.answered10.spanish_id, self.answered3.spanish_id,
+                         self.answered4.spanish_id, self.answered5.spanish_id,
+                         self.answered6.spanish_id, self.answered7.spanish_id,
+                         self.answered8.spanish_id, self.answered9.spanish_id,]
         self.assertEqual(answered_data, expected_data)
 
         #BUT ALL DUE OR OVERDUE ITEMS ARE TREATED THE SAME
