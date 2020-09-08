@@ -22,6 +22,12 @@ class TestSMalgorithm(UpdateItemsMixin, TestCase):
             english_translation = 'my name is',
             level_number = self.level,
         )
+
+        self.spanish2 = Spanish.objects.create(
+            spanish_phrase = 'te llamas',
+            english_translation='your name is',
+            level_number=self.level,
+        )
         self.answered = Answered.objects.create(
             user = self.user,
             spanish_id = self.spanish,
@@ -29,7 +35,7 @@ class TestSMalgorithm(UpdateItemsMixin, TestCase):
         )
         self.answered2 = Answered.objects.create(
             user=self.user,
-            spanish_id=self.spanish,
+            spanish_id=self.spanish2,
             level_int=2,
             repetition = 1,
         )

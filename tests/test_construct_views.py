@@ -28,7 +28,6 @@ class ConstructTestView(TestCase, LoadQuestionsMixin, InitializeMixin):
         self.playerstatus = PlayerStatus.objects.create(
             user=self.user,
             current_level='0',
-
         )
         self.spanish = Spanish.objects.create(
             spanish_phrase='testing',
@@ -92,7 +91,6 @@ class ConstructTestView(TestCase, LoadQuestionsMixin, InitializeMixin):
 
         data = self.client.session['data']
         d = json.loads(data)
-        self.assertEqual(len(d),5)
 
         #Get question id for first item
         first= d[0]['fields']['spanish_id']
@@ -117,7 +115,7 @@ class ConstructTestView(TestCase, LoadQuestionsMixin, InitializeMixin):
         self.assertEqual(answered.ef, 2.6)
         self.assertEqual(answered.quality_value, 5)
 
-        #check due to be reviewed tomorrow
+        #check due to be reviewed tomorrow and last review is saved as today
         now = timezone.now().date()
         last_reviewed = answered.last_review_day
         reviewtime = answered.review_time.strftime("%Y-%m-%d, %H:%M")
@@ -131,8 +129,8 @@ class ConstructTestView(TestCase, LoadQuestionsMixin, InitializeMixin):
         post_response = self.client.post('/users/login/', {'username': 'testuser', 'password': 'secret'})
         response = self.client.get(reverse('construct'))
 
-        correct_answer = Questions.objects.filter(id='1').first()
-        correct_answer = str(correct_answer.correct_answer)
+        #correct_answer = Questions.objects.filter(id='1').first()
+        #correct_answer = str(correct_answer.correct_answer)
 
 
         data = self.client.session['data']
@@ -181,6 +179,9 @@ class ConstructTestView(TestCase, LoadQuestionsMixin, InitializeMixin):
         answered = Answered.objects.filter(spanish_id=spanish).first()
         #As timeout quality should be zero
         self.assertEqual(answered.quality_value, 0)
+        self.assertEqual(answered.repetition, 1)
+        self.assertEqual(answered.ef, 2.5)
+
 
 
     def test_construct_POST_redirect_result(self):

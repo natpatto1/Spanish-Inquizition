@@ -10,7 +10,7 @@ from django.utils import timezone
 from datetime import date, timedelta
 
 
-class TestViews(TestCase):
+class TestCourseViews(TestCase):
     def setUp(self):
         self.user = get_user_model().objects.create_user(
             username='testuser',
@@ -22,7 +22,6 @@ class TestViews(TestCase):
             points_threshold = '100',
             description = 'test'
         )
-
         self.level2 = Levels.objects.create(
             level_number='2',
             points_threshold='200',
@@ -33,15 +32,11 @@ class TestViews(TestCase):
             user = self.user,
             session = self.today
         )
-
-
-
         self.spanish = Spanish.objects.create(
             spanish_phrase = 'testing',
             english_translation = 'test',
             level_number = self.level
         )
-
         self.spanish2 =Spanish.objects.create(
             spanish_phrase='tester',
             english_translation='test2',
@@ -62,29 +57,82 @@ class TestViews(TestCase):
             english_translation='west',
             level_number=self.level)
 
+        self.spanish6 = Spanish.objects.create(
+            spanish_phrase = 'when',
+            english_translation='when',
+            level_number=self.level2
+        )
+        self.spanish7 = Spanish.objects.create(
+            spanish_phrase='two',
+            english_translation='two',
+            level_number=self.level2
+        )
+        self.spanish8 = Spanish.objects.create(
+            spanish_phrase='strong',
+            english_translation='strong',
+            level_number=self.level2
+        )
+        self.spanish9 = Spanish.objects.create(
+            spanish_phrase='stronger',
+            english_translation='stronger',
+            level_number=self.level2
+        )
         self.playerscore = PlayerScore.objects.create(
             user = self.user,
             level = self.level,
         )
         self.answered = Answered.objects.create(
             user=self.user,
-            spanish_id=self.spanish
+            spanish_id=self.spanish,
+            level_int = 1,
         )
         self.answered2 = Answered.objects.create(
             user=self.user,
-            spanish_id=self.spanish2
+            spanish_id=self.spanish2,
+            level_int=1,
         )
         self.answered3 = Answered.objects.create(
             user=self.user,
-            spanish_id=self.spanish3
+            spanish_id=self.spanish3,
+            level_int=1,
         )
         self.answered4 = Answered.objects.create(
             user=self.user,
-            spanish_id=self.spanish4
+            spanish_id=self.spanish4,
+            level_int=1,
         )
         self.answered5 = Answered.objects.create(
             user=self.user,
-            spanish_id=self.spanish5
+            spanish_id=self.spanish5,
+            level_int=1,
+        )
+        self.answered6 = Answered.objects.create(
+        user=self.user,
+        spanish_id=self.spanish6,
+        repetition=4,
+        level_int=2,
+        review_time=self.today + timezone.timedelta(hours=730)
+        )
+        self.answered7 = Answered.objects.create(
+        user=self.user,
+        spanish_id=self.spanish7,
+        repetition=4,
+        level_int=2,
+        review_time=self.today + timezone.timedelta(hours=730)
+        )
+        self.answered8 = Answered.objects.create(
+        user=self.user,
+        spanish_id=self.spanish8,
+        repetition=4,
+        level_int=2,
+        review_time=self.today + timezone.timedelta(hours=730)
+        )
+        self.answered9 = Answered.objects.create(
+        user=self.user,
+        spanish_id=self.spanish9,
+        repetition=4,
+        level_int=2,
+        review_time=self.today + timezone.timedelta(hours=730)
         )
 
     def test_homepage_GET(self):
@@ -122,7 +170,16 @@ class TestViews(TestCase):
     def test_homepage_GET_strength_context(self):
         self.client.login(username='testuser', password='secret')
         response = self.client.get(reverse('home'))
-        self.assertEqual(response.context['strength'], {1:'weak',})
+        self.assertEqual(response.context['strength'], {1:'weak', })
+
+    def test_homepage_GET_strength_context_level_two(self):
+        self.client.login(username='testuser', password='secret')
+
+        self.playerscore.level = self.level2
+        self.playerscore.save()
+
+        response = self.client.get(reverse('home'))
+        self.assertEqual(response.context['strength'], {1: 'weak', 2: 'strong',})
 
 
     def test_homepage_POST(self):

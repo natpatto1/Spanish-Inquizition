@@ -1,13 +1,39 @@
 {% extends 'base.html' %}
 
+{% load staticfiles %}
+
 {% block title %}Log In{% endblock title %}
 
 {% block content %}
-<h2>Log In</h2>
+<body>
+<div class="container">
+    <img src="https://dqktggxxlj4o5.cloudfront.net/static/login.png">
+    <div class="row justify-content-around">
+         <div style="text-align:left;">The Spanish Inquizition is a free browser based application for English speakers to
+         learn and memorize Spanish vocabulary and phrases. I have tried to make learning fun, not torturous!
+             Along the way you will pick up some useful language points you can apply to other sources of learning.
+             <br><br>
+         I have built a prototype of 4 topics for beginners. The aim of the game is to earn points and unlock new
+             topics by playing games that test words or phrases you haven't mastered.
+        <br><br>
+         By the end of the course you will know more about how to talk about yourself, other people, food and
+             ordering and counting. Venga! Let's go!</div></div>
+     <div class="row justify-content-around">
+         <div class="col-7 align-self-start">
+             <img src="https://dqktggxxlj4o5.cloudfront.net/static/gameover.png"></div>
+         <div class="col align-self-center">
+             <h2 >Log In</h2>
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Log In</button>
+    <button type="submit" class="btn btn-success">Log In</button>
 </form>
+     </div>
 
+
+
+
+
+</div>
+</body>
 {% endblock content %}

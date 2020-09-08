@@ -132,7 +132,7 @@ class LoadTest(TestCase, LoadQuestionsMixin):
         self.assertEqual(answered_data, expected_data)
 
     def test_load_data4(self):
-        #self.answered1 rep will be changed to 1 but as review time is automatically set to today, it will be due
+        #self.answered1 rep will be changed to 1 but as review time is default set to today, it will be due
         self.answered1.repetition = 1
         self.answered1.save()
         answered_data = self.load_data([1,], self.user)
@@ -145,7 +145,7 @@ class LoadTest(TestCase, LoadQuestionsMixin):
 
     def test_overdue(self):
         self.answered10.review_time = timezone.now() - timezone.timedelta(hours=24)
-        #answered10 should be ranked as overdue and prioritized first (just after first two that are on zero rep).
+        #answered10 should be ranked as overdue and prioritized third (just after first two that are on zero rep).
         self.answered10.save()
         answered_data = self.load_data([1,], self.user)
         expected_data = [self.answered1.spanish_id, self.answered2.spanish_id,
@@ -157,3 +157,16 @@ class LoadTest(TestCase, LoadQuestionsMixin):
 
         #BUT ALL DUE OR OVERDUE ITEMS ARE TREATED THE SAME
         #answered 10 is actually overdue a day, whereas answered 3 and 4 are due today.
+
+    def test_prioirty_overdue_items(self):
+        #Update answered 4 to be more overdue that answered 3 and objects will switch places in list
+        self.answered4.review_time = timezone.now() - timezone.timedelta(hours=24)
+        self.answered4.save()
+        answered_data = self.load_data([1, ], self.user)
+        expected_data = [self.answered1.spanish_id, self.answered2.spanish_id,
+                         self.answered4.spanish_id, self.answered3.spanish_id,
+                         self.answered5.spanish_id, self.answered6.spanish_id,
+                         self.answered7.spanish_id, self.answered8.spanish_id,
+                         self.answered9.spanish_id, self.answered10.spanish_id, ]
+        self.assertEqual(answered_data, expected_data)
+

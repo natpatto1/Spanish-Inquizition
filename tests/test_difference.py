@@ -23,7 +23,7 @@ class TestLevenshchtein(TestCase, CompareMixin):
     def test_punctuation_missing(self):
         answer = 'Cómo se Dice'
         correct_answer = '¿Cómo Se Dice?'
-        sentence = False
+        sentence = True
         quality = self.findQuality(answer, correct_answer, sentence)
         #as only punctuation missing, this would be 5 quality
         self.assertEqual(quality,5)

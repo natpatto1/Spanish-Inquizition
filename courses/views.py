@@ -339,7 +339,7 @@ class CourseListView(LoginRequiredMixin, LoadQuestionsMixin, View):
             elif today < 3 and two_weeks >= 3:
                 strength[num] = 'medium'
             elif two_weeks_plus > 3:
-                strength[num] = 'high'
+                strength[num] = 'strong'
             else:
                 strength[num] = 'weak'
 
@@ -401,7 +401,7 @@ class CourseListView(LoginRequiredMixin, LoadQuestionsMixin, View):
             for item in spanish_data:
                 result = Answered.objects.filter(user = self.user,
                                                  spanish_id = item).count()
-                
+
                 if result == 0:
                     spanish_list_to_add.append(item)
         print('NEED to make', spanish_list_to_add)
