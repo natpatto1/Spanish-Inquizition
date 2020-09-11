@@ -15,7 +15,7 @@ django-filter==2.2.0
 django-storages==1.9.1
 docutils==0.15.2
 graphviz==0.14.1
-gunicorn==20.0.4
+gunicorn==19.9.0
 idna==2.10
 jmespath==0.10.0
 kiwisolver==1.2.0
