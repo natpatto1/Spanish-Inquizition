@@ -1,0 +1,1 @@
+web: gunicorn Inquizition.wsgi --log-file -
