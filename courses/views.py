@@ -688,7 +688,7 @@ class LevelInfo(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin, View):
 
         self.get_spanish_review_times_and_information_index()
 
-        
+
 
         self.table_words = self.convert_level_data_to_dictionary()
 
