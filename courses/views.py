@@ -22,6 +22,7 @@ from itertools import groupby
 from django.utils.safestring import mark_safe
 from construct.models import Verbs, Pronouns, Article
 import calendar
+from django.core.cache import cache
 
 
 # Create your views here.
@@ -688,10 +689,13 @@ class LevelInfo(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin, View):
 
         self.get_spanish_review_times_and_information_index()
 
+        table_data = cache.get('level_data')
+        if not table_data:
+            table_data =  self.convert_level_data_to_dictionary()
+            cache.set('level_data', table_data)
 
-
-        self.table_words = self.convert_level_data_to_dictionary()
-
+        #self.table_words = self.convert_level_data_to_dictionary()
+        self.table_words = table_data
 
 
         spanish_data = request.session['data']
