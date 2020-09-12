@@ -200,18 +200,18 @@ def get_cache():
             # Enable faster IO
             'no_block': True,
             'tcp_nodelay': True,
-            # Keep connection alive
-            'tcp_keepalive': True,
-            # Timeout settings
-            'connect_timeout': 2000, # ms
-            'send_timeout': 750 * 1000, # us
-            'receive_timeout': 750 * 1000, # us
-            '_poll_timeout': 2000, # ms
-            # Better failover
-            'ketama': True,
-            'remove_failed': 1,
-            'retry_timeout': 2,
-            'dead_timeout': 30,
+            # # Keep connection alive
+            # 'tcp_keepalive': True,
+            # # Timeout settings
+            # 'connect_timeout': 2000, # ms
+            # 'send_timeout': 750 * 1000, # us
+            # 'receive_timeout': 750 * 1000, # us
+            # '_poll_timeout': 2000, # ms
+            # # Better failover
+            # 'ketama': True,
+            # 'remove_failed': 1,
+            # 'retry_timeout': 2,
+            # 'dead_timeout': 30,
           }
         }
       }
@@ -224,6 +224,19 @@ def get_cache():
     }
 
 CACHES = get_cache()
+# import os
+# CACHES = {
+#         "default": {
+#             "BACKEND": 'django.core.cache.backends.memcached.PyLibMCCache',
+#             "LOCATION": os.environ['MEMCACHIER_SERVERS'],
+#             "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#         }
+#     },
+#     'dummy': {
+#         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+#         'LOCATION': 'unique-snowflake',
+#     }
+# }
 
 SESSION_ENGINE= "django.contrib.sessions.backends.cached_db"
-SESSION_CACHE_ALIAS = "default"
