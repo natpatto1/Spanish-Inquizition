@@ -172,9 +172,9 @@ STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 MEDIA_ROOT=os.path.join(BASE_DIR,"media")
 MEDIA_URL='/media/'
 
-# INTERNAL_IPS = [
-#     '127.0.0.1',
-# ]
+INTERNAL_IPS = [
+     '127.0.0.1',
+ ]
 
 DEBUG_TOOLBAR_PATCH_SETTINGS = False
 
@@ -224,3 +224,5 @@ def get_cache():
     }
 
 CACHES = get_cache()
+
+SESSION_ENGINE= "django.contrib.sessions.backends.cached_db"
