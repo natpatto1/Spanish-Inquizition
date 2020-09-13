@@ -47,7 +47,7 @@
       <th scope="row">{{ object.spanish_phrase }}</th>
       <td>{{ object.english_translation }}</td>
       <td>{{ object.review_in }} day(s)</td>
-      <td><button class="say btn btn-primary" value = "{{ object.spanish_phrase }}">listen</button>
+      <td><button type="button" class="say btn btn-primary" value = "{{ object.spanish_phrase }}">listen</button>
           </td>
       <td>{% if object.information != '' %}
       <button class ="myBtn btn btn-primary" id="myBtn">i</button>
@@ -115,11 +115,12 @@
     const infoModal = document.getElementsByClassName("infoModal");
     const btn = document.getElementsByClassName("myBtn");
     function listen(value) {
-        window.stop();
+
         var text = value;
         var msg = new SpeechSynthesisUtterance(text);
         msg.lang = 'es-SP';
         msg.rate = 0.8;
+        console.log(msg);
         window.speechSynthesis.speak(msg);}
 
     function info(i) {
