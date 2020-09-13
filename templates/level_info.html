@@ -47,7 +47,7 @@
       <th scope="row">{{ object.spanish_phrase }}</th>
       <td>{{ object.english_translation }}</td>
       <td>{{ object.review_in }} day(s)</td>
-      <td><button type="submit" class="say btn btn-primary" name = "{{ object.spanish_phrase }}">listen</a>
+      <td><button class="say btn btn-primary" value = "{{ object.spanish_phrase }}">listen</button>
           </td>
       <td>{% if object.information != '' %}
       <button class ="myBtn btn btn-primary" id="myBtn">i</button>
@@ -140,7 +140,8 @@
 
     for (let i = 0; i < words; i++) { //words is the total number of vocab item displayed
       options[i].addEventListener("click", function() {
-        listen(options[i].name);
+        console.log(options[i].value);
+        listen(options[i].value);
       });
       }
     for (let i = 0; i < infos; i++) {
