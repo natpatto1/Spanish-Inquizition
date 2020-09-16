@@ -66,19 +66,19 @@
 <!--        <div class="row justify-content-around">-->
 
 
-        <div  id="dropzone1" style="width:80px; float:left; display: inline-block;" value = '' class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-<div id="dropzone2" style="width:80px; float:left; display: inline-block;" value = '' class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-<div id="dropzone3" style="width:80px; float:left; display: inline-block;" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-<div id="dropzone4" style="width:80px; float:left; display: inline-block;" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-<div id="dropzone5" style="width:80px; float:left; display: inline-block;" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-<div id="dropzone6" style="width:80px; float:left; display: inline-block;" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-            <div id="dropzone7" style="width:80px; float:left; display: inline-block;" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-            <div id="dropzone8" style="width:80px; float:left; display: inline-block;" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-            <div id="dropzone9" style="width:80px; float:left; display: inline-block;" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-            <div id="dropzone10" style="width:80px; float:left; display: inline-block;" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-            <div id="dropzone11" style="width:80px; float:left; display: inline-block;" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-        <div id="dropzone12" style="width:80px; float:left; display: inline-block;" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-        <div id="dropzone13" style="width:80px; float:left; display: inline-block;" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+        <div  id="dropzone1" style="width:80px; float:left; display: inline-block;border-bottom:1px solid #aaaaaa" value = '' class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+<div id="dropzone2" style="width:80px; float:left; display: inline-block;border-bottom:1px solid #aaaaaa" value = '' class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+<div id="dropzone3" style="width:80px; float:left; display: inline-block;border-bottom:1px solid #aaaaaa" value = ''class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+<div id="dropzone4" style="width:80px; float:left; display: inline-block;border-bottom:1px solid #aaaaaa" value = ''class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+<div id="dropzone5" style="width:80px; float:left; display: inline-block;border-bottom:1px solid #aaaaaa" value = ''class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+<div id="dropzone6" style="width:80px; float:left; display: inline-block;border-bottom:1px solid #aaaaaa" value = ''class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div id="dropzone7" style="width:80px; float:left; display: inline-block;border-bottom:1px solid #aaaaaa" value = ''class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div id="dropzone8" style="width:80px; float:left; display: inline-block;border-bottom:1px solid #aaaaaa" value = ''class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div id="dropzone9" style="width:80px; float:left; display: inline-block;border-bottom:1px solid #aaaaaa" value = ''class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div id="dropzone10" style="width:80px; float:left; display: inline-block;border-bottom:1px solid #aaaaaa" value = ''class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div id="dropzone11" style="width:80px; float:left; display: inline-block;border-bottom:1px solid #aaaaaa" value = ''class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+        <div id="dropzone12" style="width:80px; float:left; display: inline-block;border-bottom:1px solid #aaaaaa" value = ''class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+        <div id="dropzone13" style="width:80px; float:left; display: inline-block;border-bottom:1px solid #aaaaaa" value = ''class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
 
 
 <!--        </div>-->
@@ -89,8 +89,8 @@
             <div class="d-flex flex-row bd-highlight mb-3 justify-content-center">
           {% for char in characters %}
                 <div class="w-10 p-2 bd-highlight flex-shrink-1">
-                    <div id="buttonsHolder">
-                        <button class = "btn btn-outline-success option-btn my-2 mx-auto d-block" id = "{{ char }}" style="" draggable="true" ondragstart="drag(event)"> {{ char }}</button>
+                    <div id="buttonsHolder" ondrop="drop(event)" ondragover="allowDrop(event)">
+                        <button class = "btn btn-outline-success option-btn my-2 mx-auto d-block" id = "{{ char }}" value ="{{ char }}"style="" draggable="true" ondragstart="drag(event)"> {{ char }}</button>
                     </div></div>
           {% endfor %}
         </div>
@@ -142,12 +142,14 @@
 
     function drag(ev) {
         ev.dataTransfer.setData("text", ev.target.id);
+        ev.dataTransfer.setData('txt', ev.target.value);
 
     }
 
     function drop(ev) {
         ev.preventDefault();
         var data = ev.dataTransfer.getData("text");
+        var text = ev.dataTransfer.getData("txt");
         var btnsHolder = document.getElementById("buttonsHolder");
         let target = ev.target;
 
@@ -156,11 +158,11 @@
         if ($(target.children).hasClass('btn')){
             btnsHolder.appendChild(target.children[0])};
         target.appendChild(document.getElementById(data));
-        target.value = String(data);}
+        target.value = String(text);}
 
         else if ($(target).hasClass('btn')){
         $(target).parent()[0].appendChild(document.getElementById(data));
-        $(target).parent()[0].value = String(data);
+        $(target).parent()[0].value = String(text);
         btnsHolder.appendChild(target);
         console.log('$(target).parent()', $(target).parent());
         };
@@ -203,12 +205,19 @@
                 decreaseTimer();};}
 
     document.addEventListener("DOMContentLoaded", function() {
+      for (let i = 0; i < letters; i++){
+        options[i].id = i;
+        ;};
+
       gameover();
       liveImages();
       exitLink();
 
 
     });
+
+
+
     function exitLink(){
         if(review == 'True'){
             var url = $("#Url").attr("data-url");
@@ -217,16 +226,23 @@
             gameoverLink.innerHTML = 'Go back to Homepage to play again.';};}
 
     submit.addEventListener("click",function(){
+        var answer = document.getElementById('user-input')
         for (let i = 0; i < 13; i++){
             if (typeof dropzones[i].value !== 'undefined'){
-                answer2 += ' ' + dropzones[i].value;}};
+                if(sentence == 'True'){
+                    answer2 += ' ' + dropzones[i].value;
+                    answer.value = answer2.substring(1)
+
+                    }
+                else{
+                    answer2 += dropzones[i].value;
+                    answer.value = answer2};}};
         console.log(answer2);
-        var answer = document.getElementById('user-input')
-        answer.value = answer2
-        answer= answer2.replace(/[?!¿¡]/g,"");
+
+        answer2= answer2.replace(/[?!¿¡]/g,"");
         correct_answer = correct_answer.replace(/[?!¿¡]/g,"");
-        answer = answer.replace(/\s+/g, ' ').trim();
-        if (answer.toLowerCase() === correct_answer){
+        answer2 = answer2.replace(/\s+/g, ' ').trim();
+        if (answer2.toLowerCase() === correct_answer){
             response.innerHTML = 'Sucess!';
             response.style.color = '#32CD32';
 
