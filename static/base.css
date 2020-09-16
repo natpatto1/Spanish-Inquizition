@@ -121,6 +121,7 @@ html {
 
 .static {
   border: 1px solid #aaaaaa;
+  width: 50px;
 }
 
 .drop-into-me {

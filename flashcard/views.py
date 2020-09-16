@@ -113,6 +113,7 @@ class Game(LoginRequiredMixin,LoadQuestionsMixin,InitializeMixin,UpdateItemsMixi
 
         self.question_id = int(request.POST['question-id'])
         answer = str(request.POST['answer'])
+        print('ANSWER', answer, 'FINISH')
         answer = re.sub(' +', ' ', answer)
         answer = re.sub('&nbsp;', ' ', answer)
         self.answer = answer.replace(u"\u00A0", " ")

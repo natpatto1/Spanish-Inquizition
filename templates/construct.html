@@ -63,14 +63,25 @@
             <input type="hidden" id="lives" value="{{ lives }}">
             <input type="hidden" id="review" value="{{ review }}">
             <input type="hidden" id="Url" data-url="{% url 'home' %}">
+<!--        <div class="row justify-content-around">-->
 
-        <div  id="dropzone1" value = '' class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-<div id="dropzone2" value = '' class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-<div id="dropzone3" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-<div id="dropzone4" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-<div id="dropzone5" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-<div id="dropzone6" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
 
+        <div  id="dropzone1" style="width:80px; float:left; display: inline-block;" value = '' class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+<div id="dropzone2" style="width:80px; float:left; display: inline-block;" value = '' class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+<div id="dropzone3" style="width:80px; float:left; display: inline-block;" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+<div id="dropzone4" style="width:80px; float:left; display: inline-block;" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+<div id="dropzone5" style="width:80px; float:left; display: inline-block;" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+<div id="dropzone6" style="width:80px; float:left; display: inline-block;" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div id="dropzone7" style="width:80px; float:left; display: inline-block;" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div id="dropzone8" style="width:80px; float:left; display: inline-block;" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div id="dropzone9" style="width:80px; float:left; display: inline-block;" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div id="dropzone10" style="width:80px; float:left; display: inline-block;" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div id="dropzone11" style="width:80px; float:left; display: inline-block;" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+        <div id="dropzone12" style="width:80px; float:left; display: inline-block;" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+        <div id="dropzone13" style="width:80px; float:left; display: inline-block;" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+
+
+<!--        </div>-->
       </form>
         <div class="text-center"> <h5 id="response"></h5></div>
 
@@ -140,13 +151,6 @@
         var btnsHolder = document.getElementById("buttonsHolder");
         let target = ev.target;
 
-<!--        if (buttonIds.includes(target.id)){-->
-<!--            console.log(target.id);-->
-<!--            btnsHolder.appendChild(target);-->
-<!--            target.appendChild(document.getElementById(data));-->
-<!--            target.value = String(data);-->
-<!--            };-->
-
         console.log($(target).hasClass('dropzone'));
         if ($(target).hasClass('dropzone')){
         if ($(target.children).hasClass('btn')){
@@ -171,29 +175,6 @@
         timerCount -= 1;
       setTimeout(decreaseTimer, 1000);
         }
-    }
-
-
-
-
-    function addButton(value) {
-    if (sentence === 'True'){
-        value = value.trim();
-        if ((document.getElementById('user-input').value) !== ''){
-            document.getElementById('user-input').value += ' ' + value;
-        }
-        else {
-            document.getElementById('user-input').value += value;
-        };
-    }
-    else {
-        value= value.trim();
-        if (value === ""){
-            document.getElementById('user-input').value += ' ';
-        }
-        else {
-            document.getElementById('user-input').value += value;}
-    };
     }
 
     function stopTime(){
@@ -221,14 +202,7 @@
             else if (lives !=0){
                 decreaseTimer();};}
 
-
-
     document.addEventListener("DOMContentLoaded", function() {
-    for (let i = 0; i < letters; i++) {
-      options[i].addEventListener("click", function() {
-        addButton(options[i].innerHTML);
-      });
-      }
       gameover();
       liveImages();
       exitLink();
@@ -243,12 +217,13 @@
             gameoverLink.innerHTML = 'Go back to Homepage to play again.';};}
 
     submit.addEventListener("click",function(){
-        for (let i = 0; i < 4; i++){
+        for (let i = 0; i < 13; i++){
             if (typeof dropzones[i].value !== 'undefined'){
                 answer2 += ' ' + dropzones[i].value;}};
         console.log(answer2);
-        var answer = document.getElementById('user-input').value;
-        answer= answer.replace(/[?!¿¡]/g,"");
+        var answer = document.getElementById('user-input')
+        answer.value = answer2
+        answer= answer2.replace(/[?!¿¡]/g,"");
         correct_answer = correct_answer.replace(/[?!¿¡]/g,"");
         answer = answer.replace(/\s+/g, ' ').trim();
         if (answer.toLowerCase() === correct_answer){
@@ -269,9 +244,6 @@
       stopTime();
       submit.disabled = true;
       setTimeout(function(){question.submit()},3000);
-
-
-
       });
 
     history.pushState(null, null, location.href );
