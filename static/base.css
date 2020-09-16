@@ -112,3 +112,22 @@ html {
 .modal-open {
     overflow: scroll;
 }
+
+.dropzone {
+  width: 350px;
+  height: 70px;
+  padding: 10px;
+}
+
+.static {
+  border: 1px solid #aaaaaa;
+}
+
+.drop-into-me {
+  border: 1px dotted #aaaaaa;
+}
+
+.over-me {
+  background-color: yellow;
+  border: 1px dotted #aaaaaa;
+}

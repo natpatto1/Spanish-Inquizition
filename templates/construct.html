@@ -59,11 +59,15 @@
             <input type="hidden" id="word-length" value="{{ word_length }}">
             <input type="hidden" id="sentence" value="{{ sentence }}">
             <input type ="hidden" id="correct-answer" value="{{ spanish }}">
-            <input class="mx-auto d-block" type="text" id="user-input" name="answer" value ="" style="width:500px">
+            <input class="mx-auto d-block" type="hidden" id="user-input" name="answer" value ="" style="width:500px">
             <input type="hidden" id="lives" value="{{ lives }}">
             <input type="hidden" id="review" value="{{ review }}">
             <input type="hidden" id="Url" data-url="{% url 'home' %}">
 
+        <div  id="dropzone1" value = '' class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+<div id="dropzone2" value = '' class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+<div id="dropzone3" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+<div id="dropzone4" value = ''class="static dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
 
 
 
@@ -74,8 +78,9 @@
             <div class="d-flex flex-row bd-highlight mb-3 justify-content-center">
           {% for char in characters %}
                 <div class="w-10 p-2 bd-highlight flex-shrink-1">
-          <button class = "btn btn-outline-success option-btn my-2 mx-auto d-block" style="">
-              {{ char }}</button></div>
+                    <div id="buttonsHolder">
+                        <button class = "btn btn-outline-success option-btn my-2 mx-auto d-block" id = "{{ char }}" style="" draggable="true" ondragstart="drag(event)"> {{ char }}</button>
+                    </div></div>
           {% endfor %}
         </div>
                 <button type="submit" class="btn btn-success my-2 mx-auto d-block" id="submit">Submit</button>
@@ -100,10 +105,11 @@
     var correct_answer = document.getElementById('correct-answer').value.toLowerCase();
     var timerStop = 'False';
     const lives = document.getElementById('lives').value;
-    const answer = document.getElementById('answer');
     const review = document.getElementById('review').value;
     const exit = document.getElementById('exit');
     const gameoverLink = document.getElementById('gameover-link');
+    const dropzones = document.getElementsByClassName('dropzone');
+    var answer2 = '';
 
     var audioElement = document.createElement("audio");
     audioElement.src = "https://dqktggxxlj4o5.cloudfront.net/static/win.mp3"
@@ -118,6 +124,44 @@
     const timeOut = 15000;
     const timer = document.getElementById('timer');
     var timerCount = 20;
+
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+
+    }
+
+    function drop(ev) {
+        ev.preventDefault();
+        var data = ev.dataTransfer.getData("text");
+        var btnsHolder = document.getElementById("buttonsHolder");
+        let target = ev.target;
+
+<!--        if (buttonIds.includes(target.id)){-->
+<!--            console.log(target.id);-->
+<!--            btnsHolder.appendChild(target);-->
+<!--            target.appendChild(document.getElementById(data));-->
+<!--            target.value = String(data);-->
+<!--            };-->
+
+        console.log($(target).hasClass('dropzone'));
+        if ($(target).hasClass('dropzone')){
+        console.log($(target).children);
+        target.appendChild(document.getElementById(data));
+        target.value = String(data);}
+
+        else if ($(target).hasClass('btn')){
+        $(target).parent()[0].appendChild(document.getElementById(data));
+        $(target).parent()[0].value = String(data);
+        btnsHolder.appendChild(target);
+        console.log('$(target).parent()', $(target).parent());
+<!--        $(target).parent()[0].appendChild(document.getElementById(data));-->
+        };
+
+    }
 
     function decreaseTimer() {
         timer.innerHTML = timerCount;
@@ -199,10 +243,14 @@
             gameoverLink.innerHTML = 'Go back to Homepage to play again.';};}
 
     submit.addEventListener("click",function(){
+        for (let i = 0; i < 4; i++){
+            if (typeof dropzones[i].value !== 'undefined'){
+                answer2 += ' ' + dropzones[i].value;}};
+        console.log(answer2);
         var answer = document.getElementById('user-input').value;
-        answer= answer.replace(/[?!¿¡]/g,"")
-        correct_answer = correct_answer.replace(/[?!¿¡]/g,"")
-        answer = answer.replace(/\s+/g, ' ').trim()
+        answer= answer.replace(/[?!¿¡]/g,"");
+        correct_answer = correct_answer.replace(/[?!¿¡]/g,"");
+        answer = answer.replace(/\s+/g, ' ').trim();
         if (answer.toLowerCase() === correct_answer){
             response.innerHTML = 'Sucess!';
             response.style.color = '#32CD32';
