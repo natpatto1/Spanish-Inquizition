@@ -230,7 +230,7 @@ CACHES = {
             "BACKEND": 'django.core.cache.backends.memcached.PyLibMCCache',
             "LOCATION": os.environ['MEMCACHIER_SERVERS'],
             "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            
         }
     },
     'dummy': {
