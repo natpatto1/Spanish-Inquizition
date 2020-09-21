@@ -179,7 +179,7 @@ class ConstructTestView(TestCase, LoadQuestionsMixin, InitializeMixin):
         answered = Answered.objects.filter(spanish_id=spanish).first()
         #As timeout quality should be zero
         self.assertEqual(answered.quality_value, 0)
-        self.assertEqual(answered.repetition, 1)
+        self.assertEqual(answered.repetition, 0)
         self.assertEqual(answered.ef, 2.5)
 
 

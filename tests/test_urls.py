@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse, resolve
-from courses.views import CourseListView, UserCourses, LevelInfo, ScoreBoard, UserGuide
+from courses.views import CourseListView, UserActivity, LevelInfo, ScoreBoard, UserGuide
 from flashcard.views import Result, FlashcardGame
 from django.contrib.auth import get_user_model
 from construct.views import ConstructGame
@@ -23,12 +23,12 @@ class TestUrls(TestCase):
     def test_profile_page_url_resolves(self):
         self.client.login(username='testuser', password='secret')
         url = reverse('profile')
-        self.assertEqual(resolve(url).func.view_class, UserCourses)
+        self.assertEqual(resolve(url).func.view_class, UserActivity)
 
     def test_profile_month_page_url_resolves(self):
         self.client.login(username='testuser', password='secret')
         url = reverse('profile_month', args=[2020,2])
-        self.assertEqual(resolve(url).func.view_class, UserCourses)
+        self.assertEqual(resolve(url).func.view_class, UserActivity)
 
 
     def test_level_info_page_url_resolves(self):

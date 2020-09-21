@@ -71,10 +71,10 @@ class TestSMalgorithm(UpdateItemsMixin, TestCase):
         self.answered.last_review_day = timezone.now().date()
 
         self.assertEqual(self.answered.ef, 2.5)
-        self.assertEqual(self.answered.repetition, 1)
+        self.assertEqual(self.answered.repetition, 0)
         # remove seconds from review time
         self.reviewtime = self.answered.review_time.strftime("%Y-%m-%d, %H:%M")
-        self.tomorrow = (timezone.now() + timezone.timedelta(hours=24)).strftime("%Y-%m-%d, %H:%M")
+        self.tomorrow = (timezone.now()).strftime("%Y-%m-%d, %H:%M")
         self.assertEqual(self.reviewtime, self.tomorrow)
 
     def test_review_time_3(self):
@@ -127,10 +127,10 @@ class TestSMalgorithm(UpdateItemsMixin, TestCase):
         self.answered2.review_time = setreview
         self.answered2.last_review_day = timezone.now().date()
         self.assertEqual(self.answered2.ef, 2.5)
-        self.assertEqual(self.answered2.repetition, 1)
+        self.assertEqual(self.answered2.repetition, 0)
         # remove seconds from review time
         self.reviewtime = self.answered2.review_time.strftime("%Y-%m-%d, %H:%M")
-        self.due = (timezone.now() + timezone.timedelta(hours=24)).strftime("%Y-%m-%d, %H:%M")
+        self.due = (timezone.now()).strftime("%Y-%m-%d, %H:%M")
         self.assertEqual(self.reviewtime, self.due)
 
 
@@ -212,10 +212,10 @@ class TestSMalgorithm(UpdateItemsMixin, TestCase):
         self.answered2.review_time = setreview
         self.answered2.last_review_day = timezone.now().date()
         self.assertEqual(self.answered2.ef, 2.5)
-        self.assertEqual(self.answered2.repetition, 1)
+        self.assertEqual(self.answered2.repetition, 0)
         # remove seconds from review time
         self.reviewtime = self.answered2.review_time.strftime("%Y-%m-%d, %H:%M")
-        self.due = (timezone.now() + timezone.timedelta(hours=24)).strftime("%Y-%m-%d, %H:%M")
+        self.due = (timezone.now()).strftime("%Y-%m-%d, %H:%M")
         self.assertEqual(self.reviewtime, self.due)
 
     def test_review_time_10(self):
@@ -277,10 +277,10 @@ class TestSMalgorithm(UpdateItemsMixin, TestCase):
         self.answered2.last_review_day = timezone.now().date()
 
         self.assertEqual(self.answered2.ef, 2.8)
-        self.assertEqual(self.answered2.repetition, 1)
+        self.assertEqual(self.answered2.repetition, 0)
         # remove seconds from review time
         self.reviewtime = self.answered2.review_time.strftime("%Y-%m-%d, %H:%M")
-        self.due = (timezone.now() + timezone.timedelta(hours=24)).strftime("%Y-%m-%d, %H:%M")
+        self.due = (timezone.now()).strftime("%Y-%m-%d, %H:%M")
         self.assertEqual(self.reviewtime, self.due)
 
     def test_review_time_13(self):
@@ -306,7 +306,30 @@ class TestSMalgorithm(UpdateItemsMixin, TestCase):
         self.assertEqual(self.reviewtime, self.due)
 
 
+    def test_review_time_14(self):
+        self.quality = 5
+        self.answered2.ef = 3.2
+        self.answered2.repetition = 132
+        self.answered2.save()
 
+        result = self.updateInterval(self.answered2.ef, self.answered2.repetition, self.quality)
+        self.answered2.ef = result[0]
+        self.answered2.repetition = result[1]
 
+        setreview = self.setReview(self.answered2.repetition)
+        self.answered2.quality_value = self.quality
+        self.answered2.review_time = setreview
+        self.answered2.last_review_day = timezone.now().date()
 
+        self.assertEqual(self.answered2.ef, 3.3)
+        self.assertEqual(self.answered2.repetition, 180)
+        # remove seconds from review time
+        self.reviewtime = self.answered2.review_time.strftime("%Y-%m-%d, %H:%M")
+        self.due = (timezone.now() + timezone.timedelta(hours=4320)).strftime("%Y-%m-%d, %H:%M")
+        self.assertEqual(self.reviewtime, self.due)
 
+    def test_review_time_15(self):
+        self.quality = 3
+        self.answered2.ef = 3.2
+        self.answered2.repetition = 132
+        self.answered2.save()

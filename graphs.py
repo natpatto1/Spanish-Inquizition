@@ -49,17 +49,18 @@ import numpy
 # plt.show()
 #
 # ### quality 5, answered 2
-# x = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
-# y = [0, 1, 2, 3, 6, 15, 43, 134, 1, 2, 3, 7, 22, 78, 293]
+x = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,15]
+y = [0, 1, 2, 3, 6, 15, 43, 134, 0, 1, 2, 3, 7, 22, 80, 308]
 #
-# a = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
-# b = [2.5, 2.6, 2.7, 2.8, 2.9, 3, 3.1, 3.2, 3.2, 3.3, 3.4, 3.5,3.6, 3.7, 3.8]
+#a = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+#b = [2.5, 2.6, 2.7, 2.8, 2.9, 3, 3.1, 3.2, 3.2, 3.3, 3.4, 3.5,3.6, 3.7, 3.8]
 # #
-# plt.plot(a, b)
+plt.plot(x, y)
 # #
-# plt.xlabel('Time(s) seen by user')
-# plt.ylabel('EF value')
+plt.xlabel('Time(s) seen by user')
+plt.ylabel('Review interval in day(s)')
 # #
-# plt.title('EF values when a user fails to recall an item \n once despite consistently scoring correctly (quality 5)')
-# #
-# plt.show()
+
+plt.title('Item intervals when a user fails to recall an item \n once after consistently answering correctly')
+#
+plt.show()

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
-from courses.views import UserCourses, CourseListView
+from courses.views import UserActivity, CourseListView
 from flashcard.views import FlashcardGame, Result
 from django.views.generic.base import TemplateView
 from construct.views import ConstructGame
@@ -21,7 +21,7 @@ urlpatterns = [
     path('review/',include('review.urls')),
     path('',CourseListView.as_view(),name='home'),
     path('flashcard', FlashcardGame.as_view(), name = 'flashcards'),
-    path('profile/<int:year>/<int:month>/', UserCourses.as_view(), name = 'profile_month'),
+    path('profile/<int:year>/<int:month>/', UserActivity.as_view(), name = 'profile_month'),
     path('result/', Result.as_view(), name = 'result'),
 
 

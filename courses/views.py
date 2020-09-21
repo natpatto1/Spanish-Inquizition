@@ -1,11 +1,6 @@
-from django.shortcuts import render, redirect, render_to_response
-from django.template.context_processors import request
+from django.shortcuts import render, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import CreateView, ListView, DetailView, FormView
-from django.urls import reverse_lazy
 from .models import Levels, Spanish, PlayerStatus, PlayerScore, UserSessions
-from django_filters.views import FilterView
-from django.contrib.auth.decorators import login_required
 import random
 from flashcard.models import Answered, Questions
 from django.views import View
@@ -15,17 +10,13 @@ from django.core import serializers
 from django.utils import timezone
 from datetime import datetime, date
 from django.db.models import Q
-import json
 from calendar import HTMLCalendar, monthrange
 from datetime import date, timedelta
 from itertools import groupby
 from django.utils.safestring import mark_safe
 from construct.models import Verbs, Pronouns, Article
 import calendar
-from django.core.cache import cache
 
-
-# Create your views here.
 
 class LoadQuestionsMixin(object):
 
@@ -501,7 +492,7 @@ class SessionCalendar(LoginRequiredMixin, HTMLCalendar):
     def day_cell(self, cssclass, body):
         return '<td class="%s">%s</td>' % (cssclass, body)
 
-class UserCourses(LoginRequiredMixin, View):
+class UserActivity(LoginRequiredMixin, View):
     template_name = 'profile.html'
 
     def streak(self, session_object, streak_length):
@@ -623,9 +614,9 @@ class LevelInfo(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin, View):
     def get_display_level_information(self):
         self.level = PlayerStatus.objects.filter(user=self.user).first()
         self.current_level = int(self.level.current_level)
-        #self.spanish_list = Spanish.objects.filter(level_number=self.current_level)
+
         self.spanish_list = Spanish.objects.select_related('level_number').filter(level_number = self.current_level)
-        #self.spanish_list = self.spanish_list.filter(level_number = self.current_level)
+
         level_desc = Levels.objects.filter(level_number=self.current_level).first()
         self.level_desc = level_desc.description
 
@@ -639,8 +630,7 @@ class LevelInfo(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin, View):
         today = timezone.now()
         answeredstuff = Answered.objects.filter(spanish_id__level_number__level_number=self.current_level,
                                                 user = self.user)
-        #answeredstuff = answeredstuff.filter(user=self.user)
-        #answeredstuff = Answered.objects.select_related('level_number')
+
         for item in answeredstuff:
             spanish = self.spanish_list.filter(spanish_phrase=item.spanish_id).first()
 
@@ -690,6 +680,7 @@ class LevelInfo(LoginRequiredMixin, LoadQuestionsMixin, InitializeMixin, View):
         self.get_spanish_review_times_and_information_index()
 
         self.table_words = self.convert_level_data_to_dictionary()
+
 
 
         spanish_data = request.session['data']

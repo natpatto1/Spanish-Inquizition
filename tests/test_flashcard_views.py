@@ -147,7 +147,7 @@ class TestFlashcardViews(LoadQuestionsMixin, InitializeMixin, TestCase):
         answered = Answered.objects.filter(spanish_id=spanish).first()
         # As answered incorrectly EF shouldn't update, quality to 1
         # repetition to 1 and review time to tomorrow and last reviewed today
-        self.assertEqual(answered.repetition, 1)
+        self.assertEqual(answered.repetition, 0)
         self.assertEqual(answered.ef, 2.5)
         self.assertEqual(answered.quality_value, 1)
 
