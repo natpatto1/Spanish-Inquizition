@@ -96,13 +96,14 @@ class ConstructGame(Game, CompareMixin):
                 self.spanishwords = self.spanish[1:-1].split()
                 self.spanishwords = self.spanishwords + ['?', '¿']
             words = list(self.spanishwords)
+            
             # Get phrase distractors if exist
             if self.data['fields']['construct_one'] != '':
                 words.append(self.data['fields']['construct_one'])
                 if self.data['fields']['construct_two'] != '':
                     words.append(self.data['fields']['construct_two'])
                     if words.append(self.data['fields']['construct_three']) != '':
-                        words.append(self.data['fields']['construct_one'])
+                        words.append(self.data['fields']['construct_three'])
             self.p = sample(words, (len(words)))
             self.sentence = True
 

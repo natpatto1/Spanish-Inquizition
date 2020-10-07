@@ -81,16 +81,20 @@ class LoadQuestionsMixin(object):
 
             #search pronouns
             pronoun = Pronouns.objects.filter(spanish= word).first()
+
             if pronoun:
+
                 pronoun_distractor = Pronouns.objects.filter(Q(person = pronoun.person,
                                                             pronoun_type = pronoun.pronoun_type) &
                                                              ~Q(spanish = pronoun.spanish)).first()
                 if pronoun_distractor:
+
                     distractors.append(pronoun_distractor.spanish)
                 else:
                     pronoun_distractor = Pronouns.objects.filter(Q(pronoun_type=pronoun.pronoun_type) &
                                                                  ~Q(spanish=pronoun.spanish)).first()
                     if pronoun_distractor:
+
                         distractors.append(pronoun_distractor.spanish)
             article = Article.objects.filter(Q(spanish= word)).first()
             if article:
