@@ -503,13 +503,13 @@ class UserActivity(LoginRequiredMixin, View):
         date = session_object.session
         yesterday = date - timedelta(days=1)
         result = UserSessions.objects.filter(user=self.user,
-                                             session=str(yesterday)).count()
-
-        if result == 0:
+                                             session=str(yesterday)).first()
+        print(result)
+        if not result:
             return streak_length
         else:
             streak_length += 1
-            return self.streak(result[0], streak_length)
+            return self.streak(result, streak_length)
 
     def get(self, request, **kwargs):
         all_sessions = UserSessions.objects.filter(user=self.request.user)
