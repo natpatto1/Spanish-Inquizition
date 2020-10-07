@@ -400,7 +400,7 @@ class CourseListView(LoginRequiredMixin, LoadQuestionsMixin, View):
 
                 if result == 0:
                     spanish_list_to_add.append(item)
-        print('NEED to make', spanish_list_to_add)
+        
 
         self.create_answered_data(spanish_list_to_add)
 
@@ -504,7 +504,7 @@ class UserActivity(LoginRequiredMixin, View):
         yesterday = date - timedelta(days=1)
         result = UserSessions.objects.filter(user=self.user,
                                              session=str(yesterday)).first()
-        print(result)
+
         if not result:
             return streak_length
         else:
