@@ -1,13 +1,18 @@
 {% extends 'base.html' %}
 
+{% load staticfiles %}
+
 {% block title %}Sign Up{% endblock title %}
 
 {% block content %}
+<body>
+
 <h2>Sign Up</h2>
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Sign Up</button>
+    <button class = "btn btn-primary ml-2" type="submit">Sign Up</button>
 </form>
 
+</body>
 {% endblock content %}
