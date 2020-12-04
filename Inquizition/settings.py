@@ -150,22 +150,11 @@ LOGOUT_REDIRECT_URL = 'home'
 LOGIN_URL = '/users/login'
 
 
-AWS_ACCESS_KEY_ID = 'AKIAVUKRNCJBSKGWLHUW'
-AWS_SECRET_ACCESS_KEY = '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'
-AWS_STORAGE_BUCKET_NAME = 'inquizition-static'
-
-AWS_S3_CUSTOM_DOMAIN = 'dqktggxxlj4o5.cloudfront.net'
-AWS_S3_OBJECT_PARAMETERS = {
-    'CacheControl': 'max-age=86400',
-}
-AWS_LOCATION = 'static'
-
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
-STATIC_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
-STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
 
 #d3fjutrnryyv0e.cloudfront.net
 
